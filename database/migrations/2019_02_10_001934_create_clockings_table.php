@@ -19,6 +19,7 @@ class CreateClockingsTable extends Migration
             $table->string('staff_number');
             $table->string('clocking_type');
             $table->boolean('approved');
+            $table->boolean('rejected')->nullable();
             $table->unsignedInteger('user_id')->nullable();
             $table->timestamps();
 

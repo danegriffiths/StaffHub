@@ -61,8 +61,7 @@ class UserController extends Controller
     {
         $managerId = Auth::user()->staff_number;
         $users = User::where('manager_id',$managerId)->get();
-        $clockings = Clocking::where('approved', false)->orderBy('clocking_time')->get();
-
+        $clockings = Clocking::where([ ['approved', false], ['rejected', null] ])->orderBy('clocking_time')->get();
 
         foreach ($users as $u) {
 
@@ -76,12 +75,8 @@ class UserController extends Controller
             if ($data != null) {
                 $u->clocking_corrections = $data;
             }
-
-
         }
-//        dd($users);
 
-        $employeeName = $users->first()->forename. " ". $users->first()->surname;
         return view('approvals.index', ['users' => $users]);
     }
 

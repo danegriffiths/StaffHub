@@ -32,6 +32,8 @@ Route::get('/clock-out', 'ClockingController@clockOut')->name('clock-out.store')
 Route::get('/clockings', 'ClockingController@getClockings')->name('clockings.index');
 Route::get('/clockings/create', 'ClockingController@create')->name('clockings.create');
 Route::post('/clockings', 'ClockingController@store')->name('clockings.store');
+Route::get('/clocking/approve/{clocking}', 'ClockingController@approve')->name('clocking.approve');
+Route::get('/clocking/reject/{clocking}', 'ClockingController@reject')->name('clocking.reject');
 
 // Authentication Routes...
 Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');

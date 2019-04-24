@@ -7,7 +7,6 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class ClockingController extends Controller
 {
@@ -111,22 +110,28 @@ class ClockingController extends Controller
         $clocking->approved = false;
         $clocking->user_id = $user->id;
         $clocking->save();
-//        $user->staff_number = $validatedData['staff_number'];
-//        $user->forename = $validatedData['forename'];
-//        $user->surname = $validatedData['surname'];
-//        $user->department = $validatedData['department'];
-//        $user->daily_hours_permitted = $validatedData['daily_hours_permitted'];
-//        $user->weekly_hours_permitted = $validatedData['weekly_hours_permitted'];
-//        $user->flexi_balance = $validatedData['flexi_balance'];
-//        $user->manager = array_has($validatedData, 'manager');
-//        $user->administrator = array_has($validatedData, 'administrator');
-//        $user->email = $validatedData['email'];
-//        $user->password = Hash::make($validatedData['password']);
-//        $user->manager_id = $validatedData['manager_id'];
-//        $user->save();
 
         session()->flash('message', 'Clocking submitted successfully');
         return redirect()->route('clockings.create');
     }
 
+    public function approve(Clocking $clocking)
+    {
+        $approval = Clocking::find($clocking->id);
+        $approval->approved = true;
+        $approval->save();
+
+        session()->flash('message', 'Clocking approved');
+        return redirect()->route('creations.index');
+    }
+
+    public function reject(Clocking $clocking)
+    {
+        $approval = Clocking::find($clocking->id);
+        $approval->rejected = true;
+        $approval->save();
+
+        session()->flash('message', 'Clocking rejected');
+        return redirect()->route('creations.index');
+    }
 }
