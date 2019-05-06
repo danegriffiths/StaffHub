@@ -19,9 +19,13 @@
             </div>
             <hr>
             <div class="btn-group btn-group-lg" style="width:100%">
-                <a href="{{ route('users.create') }} " class="btn btn-primary" style="width: 50%">Create User</button></a>
+                <a href="{{ route('users.create') }}" class="btn btn-primary" style="width: 50%">Create User</a>
                 <button type="submit" class="btn btn-primary" style="width: 50%">Delete user</button>
             </div>
+            <div>
+                <a href="{{ route('users.loadData') }}">Upload</a>
+            </div>
+
         @endif
 
 	</div>

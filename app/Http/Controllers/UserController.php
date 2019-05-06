@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Arr;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use League\Csv\Reader;
+
+ini_set('max_execution_time', 320);
 
 class UserController extends Controller
 {
@@ -139,5 +143,90 @@ class UserController extends Controller
     public function show(User $user)
     {
         return view('users.show', ['user' => $user]);
+    }
+
+
+
+//    function csvToArray($filename = '', $delimiter = ',')
+//    {
+//        if (!file_exists($filename) || !is_readable($filename))
+//            return false;
+//
+//        $header = null;
+//        $data = array();
+//
+//        if (($handle = fopen($filename, 'r')) !== false)
+//        {
+//            while (($row = fgetcsv($handle, 10000, $delimiter)) !== false)
+//            {
+//                if (!$header)
+//                    $header = $row;
+//                else
+//                    $data[] = array_combine($header, $row);
+//            }
+//            fclose($handle);
+//        }
+//
+//        return $data;
+//    }
+//
+//    public function importCsv()
+//    {
+//        $file = public_path('/home/vagrant/Laravel/staffhub/app/Http/Controllers/test.csv');
+//
+//        $customerArr = $this->csvToArray($file);
+//
+//        dd($customerArr);
+//        for ($i = 0; $i < count($customerArr); $i ++)
+//        {
+//            User::firstOrCreate($customerArr[$i]);
+//        }
+//
+//        return 'Jobi done or what ever';
+//    }
+//
+//
+//    public function importCsv()
+//    {
+//        Excel::load('/home/vagrant/Laravel/staffhub/app/Http/Controllers/test.csv')->each(function (Collection $csvLine) {
+//
+//            Character::create([
+//                'name' => "{$csvLine->get('first_name')} {$csvLine->get('last_name')}",
+//                'job' => $csvLine->get('job'),
+//            ]);
+//
+//        });
+//    }
+//
+    public function importCsv() {
+
+        $reader = Reader::createFromPath('/home/vagrant/Laravel/staffhub/app/Http/Controllers/test.csv', 'r');
+        $results = $reader->fetch();
+        foreach ($results as $row) {
+            $user = new User;
+            $user->staff_number = $row[0];
+            $user->forename = $row[1];
+            $user->surname = $row[2];
+            $user->department = $row[3];
+            $user->daily_hours_permitted = $row[4];
+            $user->weekly_hours_permitted = $row[5];
+            $user->flexi_balance = $row[6];
+            if($row[7] == "true") {
+                $user->manager = 1;
+            } else {
+                $user->manager = 0;
+            }
+            if($row[7] == "true") {
+                $user->administrator = 1;
+            } else {
+                $user->administrator = 0;
+            }
+            $user->email =$row[9];
+            $user->password = Hash::make($row[10]);
+            $user->manager_id = $row[11];
+            $user->save();
+        }
+
+        return view('dashboard');
     }
 }
