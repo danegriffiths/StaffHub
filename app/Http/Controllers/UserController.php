@@ -203,6 +203,7 @@ class UserController extends Controller
         $reader = Reader::createFromPath('/home/vagrant/Laravel/staffhub/app/Http/Controllers/test.csv', 'r');
         $results = $reader->fetch();
         foreach ($results as $row) {
+            dd($row);
             $user = new User;
             $user->staff_number = $row[0];
             $user->forename = $row[1];
