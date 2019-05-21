@@ -43,22 +43,27 @@
             @endif
 
             <h2>Clocking status</h2>
-            @if ( !auth()->user()->isClockedIn() )
+            @if ( auth()->user()->isClockedIn() )
                 <p style="color: green">Clocked In</p>
             @else
                 <p style="color: red">Clocked Out</p>
             @endif
             <h2>Daily balance</h2>
-            <p style="color: red">-4.35 hours</p>
+            <p style="color: red">{{ auth()->user()->getDailyBalance() }}</p>
         </div>
 
+        @if (Carbon::now()->isWeekend())
+            <h1 style="text-align: center; color: red">Not premitted to clock in on weekends.</h1>
+        @endif
+
         <div class="btn-group btn-group-lg" style="width:100%">
-            @if ( !auth()->user()->isClockedIn() )
-            <a href="{{ route('clock-in.store') }}" class="btn btn-primary" style="width: 50%">Clock In</a>
-            <a href="{{ route('clock-out.store') }}" class="btn btn-primary disabled" style="width: 50%">Clock Out</a>
+            @if (Carbon::now()->isWeekend())
+                <a href="{{ route('clock-in.store') }}" class="btn btn-dark disabled" style="width: 50%">Clock In</a>
+                <a href="{{ route('clock-out.store') }}" class="btn btn-dark disabled" style="width: 50%">Clock Out</a>
+            @elseif ( !auth()->user()->isClockedIn() )
+                <a href="{{ route('clock-in.store') }}" class="btn btn-primary" style="width: 100%">Clock In</a>
             @else
-            <a href="{{ route('clock-in.store') }}" class="btn btn-primary disabled" style="width: 50%">Clock In</a>
-            <a href="{{ route('clock-out.store') }}" class="btn btn-primary" style="width: 50%">Clock Out</a>
+                <a href="{{ route('clock-out.store') }}" class="btn btn-primary" style="width: 100%">Clock Out</a>
             @endif
         </div>
         <hr>

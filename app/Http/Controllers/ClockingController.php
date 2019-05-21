@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Balance;
 use App\Clocking;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ClockingController extends Controller
 {
@@ -77,6 +79,7 @@ class ClockingController extends Controller
      */
     public function create()
     {
+        $this->getDailyBalance();
         return view('clockings.create');
     }
 
@@ -133,5 +136,68 @@ class ClockingController extends Controller
 
         session()->flash('message', 'Clocking rejected');
         return redirect()->route('creations.index');
+    }
+
+
+    public function getDailyBalance()
+    {
+        $dailyAllowance = $this->time_to_decimal(Auth::user()->daily_hours_permitted);
+        $userId = Auth::user()->staff_number;
+        $clocks = Clocking::where('staff_number', $userId)->get();
+        $clockIns = Clocking::where('staff_number', $userId)->where('clocking_type',"IN")->orderBy('clocking_time')->get();
+        $clockOuts = Clocking::where('staff_number', $userId)->where('clocking_type',"OUT")->orderBy('clocking_time')->get();
+
+        foreach ($clocks as $singleClock) {
+            $data[] = substr($singleClock->clocking_time, 0, 10);
+        }
+        $uniqueDates = array_unique($data);
+
+        foreach ($uniqueDates as $date) {
+
+            $dailyTime = 0;
+            for ($i = 0; $i < $clockOuts->count(); $i++) {
+
+                if ($date == substr($clockOuts[$i]->clocking_time, 0, 10)) {
+
+                    $in = Carbon::createFromFormat('Y-m-d H:i:s', $clockIns[$i]->clocking_time);
+                    $out = Carbon::createFromFormat('Y-m-d H:i:s', $clockOuts[$i]->clocking_time);
+
+                    $times[] = $in->diffInMinutes($out);
+                    $dailyTime += $in->diffInMinutes($out);
+                }
+            }
+
+            $time = gmdate("i:s", abs($dailyTime - $dailyAllowance));
+            if ($dailyTime - $dailyAllowance < 0) {
+                $time = '-' . $time;
+            }
+
+            $balanceList = Balance::where('staff_number', $userId)->where('date', $date)->get();
+
+            if ($balanceList->count() == 0) {
+                $balance = new Balance();
+                $balance->staff_number = $userId;
+                $balance->daily_balance = $time;
+                $balance->date = $date;
+                $balance->save();
+            } else {
+                $balance = Balance::where('staff_number', $userId)->where('date', $date)->first();
+                $balance->daily_balance = $time;
+                $balance->save();
+            }
+
+        }
+    }
+
+    /**
+     * Get minutes from a time value
+     * @param $time
+     * @return float|int
+     */
+    function time_to_decimal($time) {
+        $timeArr = explode(':', $time);
+        $decTime = ($timeArr[0]*60) + ($timeArr[1]) + ($timeArr[2]/60);
+
+        return $decTime;
     }
 }

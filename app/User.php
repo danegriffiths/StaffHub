@@ -52,11 +52,43 @@ class User extends Authenticatable
 
     public function getFlexiBalance(){
 
-        if (substr($this->flexi_balance,0,1) == "-") {
-            return substr($this->flexi_balance, 0, 6);
-        } else {
-            return substr($this->flexi_balance, 0, 5);
+        $balances = Balance::all()->where('staff_number', $this->staff_number);
+
+
+//        dd($balances);
+        $accumulatedFlexi = 0;
+        foreach($balances as $singleBalance) {
+            $accumulatedFlexi += $this->time_to_decimal($singleBalance->daily_balance);
+//            dd($accumulatedFlexi);
         }
+        $flexiBalance = $this->time_to_decimal($this->flexi_balance);
+
+//        dd($flexiBalance);
+//        dd($accumulatedFlexi);
+        $calculatedBalance = $flexiBalance + $accumulatedFlexi;
+
+//        dd($calculatedBalance);
+        $time = gmdate("i:s", abs($calculatedBalance));
+        if ($calculatedBalance < 0) {
+            $time = '-' . $time;
+        }
+        return $time;
+    }
+
+    public function getDailyBalance() {
+
+        $today = substr(Carbon::now(), 0, 10);
+        $balance = Balance::all()->where('staff_number', $this->staff_number)->where('date', $today)->first();
+        $dailyHoursPermitted = $this->time_to_decimal($this->daily_hours_permitted);
+        $dailyBalance = $this->time_to_decimal($balance->daily_balance);
+
+        $total = $dailyHoursPermitted + $dailyBalance;
+
+        $time = gmdate("i:s", abs($total));
+        if ($total < 0) {
+            $time = '-' . $time;
+        }
+        return $time;
     }
     /**
      * Get the user's display name.
@@ -113,5 +145,20 @@ class User extends Authenticatable
     public function getCurrentTime()
     {
         return Carbon::now();
+    }
+
+    /**
+     * Get minutes from a time value
+     * @param $time
+     * @return float|int
+     */
+    function time_to_decimal($time) {
+        $timeArr = explode(':', $time);
+        if (substr($timeArr[0], 0, 1) == '-') {
+            $decTime = ($timeArr[0]*60) - ($timeArr[1]) - ($timeArr[2]/60);
+        } else {
+            $decTime = ($timeArr[0] * 60) + ($timeArr[1]) + ($timeArr[2] / 60);
+        }
+        return $decTime;
     }
 }

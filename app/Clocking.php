@@ -39,11 +39,15 @@ class Clocking extends Model
 
     public function getDailyBalance() {
 
+        return 5;
     }
 
-    public function storeDailyBalance() {
-        $expiresAt = Carbon::now()->endOfDay();
+//    public function storeDailyBalance() {
+////        $expiresAt = Carbon::now()->endOfDay();
+//
+//        $this->
+//    }
 
-    }
+//    public function
 
 }

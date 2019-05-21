@@ -6,6 +6,7 @@ use App\Clocking;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Arr;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -22,7 +23,7 @@ class UserController extends Controller
      */
     public function userIndex()
     {
-        $users = User::orderBy('surname')->orderBy('forename')->get();
+        $users = User::orderBy('surname')->orderBy('forename')->paginate(25);
         return view('users.index', ['users' => $users]);
     }
 
@@ -32,7 +33,7 @@ class UserController extends Controller
      */
     public function managerIndex()
     {
-        $users = User::where('manager',1)->orderBy('surname')->orderBy('forename')->get();
+        $users = User::where('manager',1)->orderBy('surname')->orderBy('forename')->paginate(25);
         return view('users.index', ['users' => $users]);
     }
 
@@ -42,7 +43,7 @@ class UserController extends Controller
      */
     public function administratorIndex()
     {
-        $users = User::where('administrator',1)->orderBy('surname')->orderBy('forename')->get();
+        $users = User::where('administrator',1)->orderBy('surname')->orderBy('forename')->paginate(25);
         return view('users.index', ['users' => $users]);
     }
 
@@ -53,7 +54,7 @@ class UserController extends Controller
     public function staffIndex()
     {
         $managerId = Auth::user()->staff_number;
-        $users = User::where('manager_id',$managerId)->orderBy('surname')->orderBy('forename')->get();
+        $users = User::where('manager_id',$managerId)->orderBy('surname')->orderBy('forename')->paginate(25);
         return view('users.index', ['users' => $users]);
     }
 
@@ -145,65 +146,11 @@ class UserController extends Controller
         return view('users.show', ['user' => $user]);
     }
 
-
-
-//    function csvToArray($filename = '', $delimiter = ',')
-//    {
-//        if (!file_exists($filename) || !is_readable($filename))
-//            return false;
-//
-//        $header = null;
-//        $data = array();
-//
-//        if (($handle = fopen($filename, 'r')) !== false)
-//        {
-//            while (($row = fgetcsv($handle, 10000, $delimiter)) !== false)
-//            {
-//                if (!$header)
-//                    $header = $row;
-//                else
-//                    $data[] = array_combine($header, $row);
-//            }
-//            fclose($handle);
-//        }
-//
-//        return $data;
-//    }
-//
-//    public function importCsv()
-//    {
-//        $file = public_path('/home/vagrant/Laravel/staffhub/app/Http/Controllers/test.csv');
-//
-//        $customerArr = $this->csvToArray($file);
-//
-//        dd($customerArr);
-//        for ($i = 0; $i < count($customerArr); $i ++)
-//        {
-//            User::firstOrCreate($customerArr[$i]);
-//        }
-//
-//        return 'Jobi done or what ever';
-//    }
-//
-//
-//    public function importCsv()
-//    {
-//        Excel::load('/home/vagrant/Laravel/staffhub/app/Http/Controllers/test.csv')->each(function (Collection $csvLine) {
-//
-//            Character::create([
-//                'name' => "{$csvLine->get('first_name')} {$csvLine->get('last_name')}",
-//                'job' => $csvLine->get('job'),
-//            ]);
-//
-//        });
-//    }
-//
     public function importCsv() {
 
         $reader = Reader::createFromPath('/home/vagrant/Laravel/staffhub/app/Http/Controllers/test.csv', 'r');
         $results = $reader->fetch();
         foreach ($results as $row) {
-            dd($row);
             $user = new User;
             $user->staff_number = $row[0];
             $user->forename = $row[1];
@@ -217,7 +164,7 @@ class UserController extends Controller
             } else {
                 $user->manager = 0;
             }
-            if($row[7] == "true") {
+            if($row[8] == "true") {
                 $user->administrator = 1;
             } else {
                 $user->administrator = 0;
