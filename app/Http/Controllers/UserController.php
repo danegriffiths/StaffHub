@@ -133,7 +133,7 @@ class UserController extends Controller
         $user->save();
 
         session()->flash('message', 'User created successfully');
-        return redirect()->route('dashboard');
+        return redirect()->route('users.show');
     }
 
     /**

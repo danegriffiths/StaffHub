@@ -29,8 +29,6 @@
         @endif
 
 	</div>
-    <p>{{ auth()->user()->getCurrentTime()}}</p>
-    <div>Registration closes in <span id="time">{{ auth()->user()->getCurrentTime()}}</span> minutes!</div>
 
     @if( !auth()->user()->administrator )
         <br>
@@ -49,7 +47,7 @@
                 <p style="color: red">Clocked Out</p>
             @endif
             <h2>Daily balance</h2>
-            <p style="color: red">{{ auth()->user()->getDailyBalance() }}</p>
+            <p style="color: red">{{ auth()->user()->getDailyBalance() }} of {{ substr(auth()->user()->daily_hours_permitted, 0, 5) }}</p>
         </div>
 
         @if (Carbon::now()->isWeekend())

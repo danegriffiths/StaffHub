@@ -80,15 +80,20 @@ class User extends Authenticatable
         $today = substr(Carbon::now(), 0, 10);
         $balance = Balance::all()->where('staff_number', $this->staff_number)->where('date', $today)->first();
         $dailyHoursPermitted = $this->time_to_decimal($this->daily_hours_permitted);
-        $dailyBalance = $this->time_to_decimal($balance->daily_balance);
 
-        $total = $dailyHoursPermitted + $dailyBalance;
+        if ($balance == null) {
+            return "No clockings submitted today";
+        } else {
+            $dailyBalance = $this->time_to_decimal($balance->daily_balance);
 
-        $time = gmdate("i:s", abs($total));
-        if ($total < 0) {
-            $time = '-' . $time;
+            $total = $dailyHoursPermitted + $dailyBalance;
+
+            $time = gmdate("i:s", abs($total));
+            if ($total < 0) {
+                $time = '-' . $time;
+            }
+            return $time;
         }
-        return $time;
     }
     /**
      * Get the user's display name.
@@ -132,19 +137,6 @@ class User extends Authenticatable
     public function manager()
     {
         return $this->belongsTo('App\User');
-    }
-
-
-
-
-
-
-    public function TODO() {
-        "AT END OF THE DAY, Need to get previous balance, add/subtract from clockings, then update DB";
-    }
-    public function getCurrentTime()
-    {
-        return Carbon::now();
     }
 
     /**

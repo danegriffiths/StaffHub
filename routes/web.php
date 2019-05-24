@@ -32,9 +32,13 @@ Route::get('/clock-in', 'ClockingController@clockIn')->name('clock-in.store');
 Route::get('/clock-out', 'ClockingController@clockOut')->name('clock-out.store');
 Route::get('/clockings', 'ClockingController@getClockings')->name('clockings.index');
 Route::get('/clockings/create', 'ClockingController@create')->name('clockings.create');
-Route::post('/clockings', 'ClockingController@store')->name('clockings.store');
+Route::get('/clockings/create-in-out', 'ClockingController@createInOut')->name('clockings.createinout');
+Route::get('/clockings/create-out-in', 'ClockingController@createOutIn')->name('clockings.createoutin');
+Route::post('/clockings-in-out', 'ClockingController@storeInOut')->name('clockings.storeinout');
+Route::post('/clockings-out-in', 'ClockingController@storeOutIn')->name('clockings.storeoutin');
 Route::get('/clocking/approve/{clocking}', 'ClockingController@approve')->name('clocking.approve');
 Route::get('/clocking/reject/{clocking}', 'ClockingController@reject')->name('clocking.reject');
+Route::get('/clocking/getBalance', 'ClockingController@getDailyBalance')->name('clocking.getBalance');
 
 // Authentication Routes...
 Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');

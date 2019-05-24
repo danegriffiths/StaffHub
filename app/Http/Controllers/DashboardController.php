@@ -9,6 +9,7 @@ class DashboardController extends Controller
     
     public function index()
     {
+        app(ClockingController::class)->getDailyBalance();
         return view('dashboard');
     }
 }
