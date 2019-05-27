@@ -155,12 +155,14 @@ class ClockingController extends Controller
         $comparingNextClockType = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'), '>', $dateTimeIn)
             ->orderBy('clocking_time', 'asc')->first();
 
+//        dd($comparingNextClockType);
         //Reject overlapping clock times i.e. an out must follow an in, with no existing times inbetween.
-        if (substr($comparingNextClockType->clocking_time,0,16) < $dateTimeOut) {
-            return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock out must occur before clock in, and before next clocking entry');
+        if ($comparingNextClockType != null) {
+            if (substr($comparingNextClockType->clocking_time, 0, 16) < $dateTimeOut) {
+                return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock out must occur before clock in, and before next clocking entry');
+            }
         }
-
-        //Reject if the user has not made any clockings, or the last clocking was of type "OUT"
+        //Reject if the last clocking was of type "IN"
         if ($comparingPriorClockType->clocking_type == "IN") {
             return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock in can only be submitted if clock out occurred previously');
 

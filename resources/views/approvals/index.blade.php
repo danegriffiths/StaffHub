@@ -7,7 +7,12 @@
     @foreach ($users as $user)
         @if ( $user->clocking_corrections == null )
         @else
-            @foreach ($user->clocking_corrections as $clocking)
+            @for ($i = 1; $i < count($user->clocking_corrections); $i++)
+                <p>{{$i}} of {{count($user->clocking_corrections)}}</p>
+
+
+
+                /////////CARRY ON FROM HERE ***************************
                 <div class="row" >
                     <div class="column col-3" style="margin: auto">{{ $user->forename }} {{ $user->surname }}</div>
                     <div class="column col-1" style="margin: auto">{{ $clocking->clocking_type }}</div>
@@ -15,7 +20,7 @@
                     <a href="{{ route('clocking.approve', ['clocking' => $clocking] ) }}" class="btn btn-success col-2" style="width: 50%; margin: 3px"">Approve</a>
                     <a href="{{ route('clocking.reject', ['clocking' => $clocking]) }}" class="btn btn-danger col-2" style="width: 50%; margin: 3px">Reject</a>
                 </div>
-            @endforeach
+            @endfor
             @php
             $noneRemaining = $noneRemaining + 1;
             @endphp
