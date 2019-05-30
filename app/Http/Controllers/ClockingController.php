@@ -277,6 +277,10 @@ class ClockingController extends Controller
         $approval->approved = true;
         $approval->save();
 
+        $approval = Clocking::find($clocking->id+1);
+        $approval->approved = true;
+        $approval->save();
+
         session()->flash('message', 'Clocking approved');
         return redirect()->route('creations.index');
     }
@@ -287,6 +291,10 @@ class ClockingController extends Controller
         $approval->rejected = true;
         $approval->save();
 
+        $approval = Clocking::find($clocking->id+1);
+        $approval->rejected = true;
+        $approval->save();
+
         session()->flash('message', 'Clocking rejected');
         return redirect()->route('creations.index');
     }
@@ -294,19 +302,19 @@ class ClockingController extends Controller
 
     public function getDailyBalance()
     {
-        if (Auth::user()->daily_hours_permitted == null) {
+        $user = Auth::user();
+        if ($user->daily_hours_permitted == null) {
             return view('/dashboard');
         } else {
             $dailyAllowance = $this->time_to_decimal(Auth::user()->daily_hours_permitted);
-            $userId = Auth::user()->staff_number;
-            $clocks = Clocking::where('staff_number', $userId)->get();
+            $staffNumber = $user->staff_number;
+            $clocks = Clocking::where('staff_number', $staffNumber)->get();
             if ($clocks->count() == 0) {
                 return view('/dashboard');
             } else {
-                $clockIns = Clocking::where('staff_number', $userId)->where('clocking_type', "IN")->orderBy('clocking_time')->get();
-                $clockOuts = Clocking::where('staff_number', $userId)->where('clocking_type', "OUT")->orderBy('clocking_time')->get();
+                $clockIns = Clocking::where('staff_number', $staffNumber)->where('clocking_type', "IN")->orderBy('clocking_time')->get();
+                $clockOuts = Clocking::where('staff_number', $staffNumber)->where('clocking_type', "OUT")->orderBy('clocking_time')->get();
 
-//                dd($clockIns);
                 foreach ($clocks as $singleClock) {
                     $data[] = substr($singleClock->clocking_time, 0, 10);
                 }
@@ -327,21 +335,53 @@ class ClockingController extends Controller
                         }
                     }
 
-                    $time = gmdate("i:s", abs($dailyTime - $dailyAllowance));
+                    //If at end of day IN is last clocking, add OUT at 2hrs more than daily allowance then notify user and manager
+                    if ($date != Carbon::now()->toDateString()) {
+                        $inCount = Clocking::where('staff_number', $staffNumber)->where('clocking_type', "IN")->where(\DB::raw('substr(clocking_time, 1, 10)'),'=', $date)->get();
+                        $outCount = Clocking::where('staff_number', $staffNumber)->where('clocking_type', "OUT")->where(\DB::raw('substr(clocking_time, 1, 10)'),'=', $date)->get();
+
+                        if ($inCount->count() > $outCount->count()) {
+
+                            $lastIn = $inCount[$inCount->count()-1]->clocking_time;
+
+                            $updateTime = Carbon::createFromTimeString($lastIn)->addMinute();
+                            $clocking = new Clocking;
+                            $clocking->clocking_time = $updateTime;
+                            $clocking->staff_number = $staffNumber;
+                            $clocking->clocking_type = "OUT";
+                            $clocking->approved = false;
+                            $clocking->user_id = $user->id;
+                            $clocking->save();
+                            /**
+                             * NEED TO ADD NOTIFICATION TO USER AND MANAGER NOW
+                             */
+                        }
+                    }
+
+                    //If dailytime > dailyallowance + 2hrs, cap at dailyallowance + 2, change clock out time, notify user and manager.
+                    /**
+                     * NEED TO ADD NOTIFICATION TO USER AND MANAGER NOW
+                     */
+                    if ($dailyTime > $dailyAllowance + 120) {
+                        $time = gmdate("i:s", abs($dailyAllowance + 120));
+                    } else {
+                        $time = gmdate("i:s", abs($dailyTime - $dailyAllowance));
+                    }
+
                     if ($dailyTime - $dailyAllowance < 0) {
                         $time = '-' . $time;
                     }
 
-                    $balanceList = Balance::where('staff_number', $userId)->where('date', $date)->get();
+                    $balanceList = Balance::where('staff_number', $staffNumber)->where('date', $date)->get();
 
                     if ($balanceList->count() == 0) {
                         $balance = new Balance();
-                        $balance->staff_number = $userId;
+                        $balance->staff_number = $staffNumber;
                         $balance->daily_balance = $time;
                         $balance->date = $date;
                         $balance->save();
                     } else {
-                        $balance = Balance::where('staff_number', $userId)->where('date', $date)->first();
+                        $balance = Balance::where('staff_number', $staffNumber)->where('date', $date)->first();
                         $balance->daily_balance = $time;
                         $balance->save();
                     }
