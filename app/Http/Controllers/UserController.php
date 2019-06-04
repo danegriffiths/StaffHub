@@ -85,6 +85,20 @@ class UserController extends Controller
         return view('approvals.index', ['users' => $users]);
     }
 
+
+    /**
+     * Remove the specified resource from storage.
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     * @throws \Exception
+     */
+    public function destroy(User $user)
+    {
+        $user->delete();
+        //todo  - add proper message here. status  not working.
+        return redirect()->route('users.index')->with('status', 'User was deleted.');
+    }
+
     /**
      * Show the form for creating a new resource.
      * @return \Illuminate\Http\Response
@@ -144,6 +158,17 @@ class UserController extends Controller
     public function show(User $user)
     {
         return view('users.show', ['user' => $user]);
+    }
+
+    public function edit(User $user)
+    {
+        $managers = $users = User::where('manager',1)->orderBy('surname')->orderBy('forename')->get();
+        return view('users.update', ['user' => $user, 'managers' => $managers]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        dd($request);
     }
 
     public function importCsv() {

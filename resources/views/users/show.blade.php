@@ -12,16 +12,32 @@
                 <li>Daily hours permitted: {{ $user->daily_hours_permitted}}</li>
                 <li>Weekly hours permitted: {{ $user->weekly_hours_permitted}}</li>
                 <li>Email: {{ $user->email}}</li>
-                <li>Manager: {{ $user->manager ? 'Yes' : 'No'}}</li>
-                <li>Administrator: {{ $user->administrator ? 'Yes' : 'No'}}</li>
-
-                @if (!$user->manager_id === null)
-                    <li>Line manager: {{ $user->manager_id}}</li>
+                @if ($user->manager_id != null)
+                <li>Line manager: {{ $user->manager_id}}</li>
                 @endif
+                <br>
+                <li>Is a manager: {{ $user->manager ? 'Yes' : 'No'}}</li>
+                <li>Is an administrator: {{ $user->administrator ? 'Yes' : 'No'}}</li>
+
+
 			</ul>
 
 
 		</div>
 	</div>
+@if (Auth::user()->isAdmin())
+<div>
+
+    <form method="POST"
+          action="{{route ('users.destroy', ['id' => $user->id]) }}">
+        @csrf
+        @method('DELETE')
+        <button class="btn btn-primary btn-lg" type="submit">Delete user</button>
+        <a href="{{ route('users.edit', ['user' => $user]) }}" class="btn btn-primary btn-lg">Update user</a>
+
+    </form>
+
+</div>
+@endif
 
 @endsection

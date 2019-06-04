@@ -123,6 +123,7 @@ class User extends Authenticatable
      */
     public function isManager()
     {
+
         if ($this->manager) {
             return true;
         } else {
@@ -137,6 +138,12 @@ class User extends Authenticatable
     public function manager()
     {
         return $this->belongsTo('App\User');
+    }
+
+    public function managerName()
+    {
+        //TODO This has not been tested.
+        return User::where('staff_id', $this->manager_id)->first();
     }
 
     /**

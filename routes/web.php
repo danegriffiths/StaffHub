@@ -26,7 +26,10 @@ Route::get('/approvals', 'UserController@clockingCreationsIndex')->name('creatio
 Route::get('/users/create', 'UserController@create')->name('users.create');
 Route::post('/users', 'UserController@store')->name('users.store');
 Route::get('/users/{user}', 'UserController@show')->name('users.show');
-Route::get('/user', 'UserController@importCsv')->name('users.loadData');
+Route::delete('users/{user}', 'UserController@destroy')->name('users.destroy');
+Route::get('users/{user}/edit', 'UserController@edit')->name('users.edit');
+Route::patch('users/update/{id}', 'UserController@update')->name('users.update');
+Route::get('/user-import', 'UserController@importCsv')->name('users.loadData');
 
 Route::get('/clock-in', 'ClockingController@clockIn')->name('clock-in.store');
 Route::get('/clock-out', 'ClockingController@clockOut')->name('clock-out.store');
