@@ -378,6 +378,7 @@ class ClockingController extends Controller
                         $balance->staff_number = $staffNumber;
                         $balance->daily_balance = $time;
                         $balance->date = $date;
+                        $balance->user_id = $user->id;
                         $balance->save();
                     } else {
                         $balance = Balance::where('staff_number', $staffNumber)->where('date', $date)->first();

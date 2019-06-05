@@ -58,6 +58,11 @@ class UserController extends Controller
         return view('users.index', ['users' => $users]);
     }
 
+    public function deleteIndex()
+    {
+        $users = User::orderBy('surname')->orderBy('forename')->paginate(25);
+        return view('users.deleteIndex', ['users' => $users]);
+    }
     /**
      * Display a listing of the resource.
      * @return \Illuminate\Http\Response
@@ -105,7 +110,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('users.create');
+        $managers = User::where('manager',1)->orderBy('surname')->orderBy('forename')->get();
+        return view('users.create', ['managers' => $managers, 'departments' => $this->getDepartments()]);
     }
 
     /**
@@ -143,11 +149,13 @@ class UserController extends Controller
         $user->administrator = array_has($validatedData, 'administrator');
         $user->email = $validatedData['email'];
         $user->password = Hash::make($validatedData['password']);
-        $user->manager_id = $validatedData['manager_id'];
+        if ($validatedData['manager_id'] != "null") {
+            $user->manager_id = $validatedData['manager_id'];
+        }
         $user->save();
 
         session()->flash('message', 'User created successfully');
-        return redirect()->route('users.show');
+        return redirect()->route('users.show', ['user' => $user]);
     }
 
     /**
@@ -157,18 +165,72 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return view('users.show', ['user' => $user]);
+        return view('users.show', ['user' => $user, 'manager' => $user->managerName()]);
     }
 
     public function edit(User $user)
     {
-        $managers = $users = User::where('manager',1)->orderBy('surname')->orderBy('forename')->get();
-        return view('users.update', ['user' => $user, 'managers' => $managers]);
+        $managers = User::where('manager',1)->orderBy('surname')->orderBy('forename')->get();
+        return view('users.update', ['user' => $user, 'managers' => $managers, 'departments' => $this->getDepartments()]);
     }
 
     public function update(Request $request, $id)
     {
-        dd($request);
+        $validatedData = $request->validate([
+            'forename' => 'required|string|max:50',
+            'surname' => 'required|string|max:50',
+            'department' => 'required|string|max:100',
+            'daily_hours_permitted' => '',
+            'weekly_hours_permitted' => '',
+            'manager' => '',
+            // If present it means true, if not present it means false
+            'administrator' => '',
+            'email' => 'required|string|email|max:255',
+            'manager_id' => '',
+        ]);
+
+        $user = User::where('id', $id)->first();
+
+        $user->forename = $validatedData['forename'];
+        $user->surname = $validatedData['surname'];
+        $user->department = $validatedData['department'];
+        $user->daily_hours_permitted = $validatedData['daily_hours_permitted'];
+        $user->weekly_hours_permitted = $validatedData['weekly_hours_permitted'];
+        $user->manager = array_has($validatedData, 'manager');
+        $user->administrator = array_has($validatedData, 'administrator');
+        if ($validatedData['email'] === $user->email) {
+            //Don't do anything
+        } else {
+            $uniqueEmail = User::where('email', $validatedData['email'])->count();
+
+            if ($uniqueEmail > 0) {
+                return redirect()->back()->withErrors("Email address already used");
+            } else {
+                $user->email = $validatedData['email'];
+            }
+        }
+        if ($validatedData['manager_id'] != "null") {
+            $user->manager_id = $validatedData['manager_id'];
+        }
+        $user->save();
+
+        session()->flash('message', 'User updated');
+        return redirect()->route('users.show', ['user' => $user]);
+    }
+
+    public function getDepartments()
+    {
+        $departments = array("Courts-1", "Courts-2", "Courts-3", "Courts-4", "Drivers-Input-1", "Drivers-Input-10",
+            "Drivers-Input-11", "Drivers-Input-12", "Drivers-Input-13", "Drivers-Input-14", "Drivers-Input-2",
+            "Drivers-Input-3", "Drivers-Input-4", "Drivers-Input-5", "Drivers-Input-6", "Drivers-Input-7",
+            "Drivers-Input-8", "Drivers-Input-9", "Finance-1", "Finance-2", "HR", "Human-Resources",
+            "Human-Resources-Drivers", "Human-Resources-Vehicles", "Information-Technology",
+            "IT", "Medical-1", "Medical-2", "Medical-3", "Medical-4", "Print", "Vehicles-Input-1",
+            "Vehicles-Input-10", "Vehicles-Input-11", "Vehicles-Input-12", "Vehicles-Input-13",
+            "Vehicles-Input-14", "Vehicles-Input-2", "Vehicles-Input-3", "Vehicles-Input-4", "Vehicles-Input-5",
+            "Vehicles-Input-6", "Vehicles-Input-7", "Vehicles-Input-8", "Vehicles-Input-9");
+
+        return $departments;
     }
 
     public function importCsv() {

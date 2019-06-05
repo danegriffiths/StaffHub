@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Create User' ])
 
 @section('content')
-<form method="POST" action="{{ route('users.store' )}}" >
+<form method="POST" action="{{ route('users.store' )}}" xmlns: xmlns:>
     @csrf
     <div class="form-group">
         <label>Staff Number</label>
@@ -20,7 +20,14 @@
 
     <div class="form-group">
         <label>Department</label>
-        <input type="text" class="form-control" name="department" placeholder="Select Department" value="{{ old('department') }}">
+        <select name="department" class="form-control">
+            <option value="" disabled selected>Select Department</option>
+            @foreach ($departments as $department)
+            <option value="{{ $department }}" >
+                {{ $department }}
+            </option>
+            @endforeach
+        </select>
     </div>
 
     <div class="form-group">
@@ -66,8 +73,15 @@
     </div>
 
     <div class="form-group">
-        <label>Manager ID</label>
-        <input type="text" class="form-control" name="manager_id" placeholder="Select users manager" value="{{ old('manager_id') }}">
+        <label>Line Manager</label>
+        <select name="manager_id" class="form-control">
+            <option value="" disabled selected>Select Manager</option>
+            @foreach ($managers as $manager)
+            <option value="{{ $manager->staff_number }}">
+                {{ $manager->forename . ' ' . $manager->surname }}
+            </option>
+            @endforeach
+        </select>
     </div>
 
     <button type="submit" class="btn btn-primary">Create User</button>

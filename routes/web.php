@@ -19,6 +19,7 @@ Route::get('dashboard', 'DashboardController@index')->name('dashboard');
 
 
 Route::get('/users', 'UserController@userIndex')->name('users.index');
+Route::get('/users/group-deletion', 'UserController@deleteIndex')->name('users.deleteIndex');
 Route::get('/managers', 'UserController@managerIndex')->name('managers.index');
 Route::get('/administrators', 'UserController@administratorIndex')->name('administrators.index');
 Route::get('/staff', 'UserController@staffIndex')->name('staff.index');

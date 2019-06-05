@@ -13,7 +13,7 @@
                 <li>Weekly hours permitted: {{ $user->weekly_hours_permitted}}</li>
                 <li>Email: {{ $user->email}}</li>
                 @if ($user->manager_id != null)
-                <li>Line manager: {{ $user->manager_id}}</li>
+                <li>Line manager: {{ $manager->forename }} {{ $manager->surname }}</li>
                 @endif
                 <br>
                 <li>Is a manager: {{ $user->manager ? 'Yes' : 'No'}}</li>
@@ -34,9 +34,7 @@
         @method('DELETE')
         <button class="btn btn-primary btn-lg" type="submit">Delete user</button>
         <a href="{{ route('users.edit', ['user' => $user]) }}" class="btn btn-primary btn-lg">Update user</a>
-
     </form>
-
 </div>
 @endif
 

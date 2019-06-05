@@ -20,7 +20,7 @@
             <hr>
             <div class="btn-group btn-group-lg" style="width:100%">
                 <a href="{{ route('users.create') }}" class="btn btn-primary" style="width: 50%">Create User</a>
-                <button type="submit" class="btn btn-primary" style="width: 50%">Delete user</button>
+                <a href="{{ route('users.deleteIndex') }}" class="btn btn-primary" style="width: 50%">Delete Users</a>
             </div>
             <div>
                 <a href="{{ route('users.loadData') }}">Upload</a>

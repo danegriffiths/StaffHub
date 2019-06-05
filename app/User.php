@@ -41,6 +41,11 @@ class User extends Authenticatable
         return $this->hasMany('App\Clocking');
     }
 
+    public function balances()
+    {
+        return $this->hasMany('App\Balance');
+    }
+
     /**
      * The attributes that should be hidden for arrays.
      *
@@ -142,9 +147,9 @@ class User extends Authenticatable
 
     public function managerName()
     {
-        //TODO This has not been tested.
-        return User::where('staff_id', $this->manager_id)->first();
+        return User::where('staff_number', $this->manager_id)->first();
     }
+
 
     /**
      * Get minutes from a time value
