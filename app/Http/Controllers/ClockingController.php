@@ -298,12 +298,11 @@ class ClockingController extends Controller
         return redirect()->route('creations.index');
     }
 
-
     public function getDailyBalance()
     {
         $user = Auth::user();
         if ($user->daily_hours_permitted == null) {
-            return view('/dashboard');
+            return view('/dashboard')->withErrors("You are unable to perform ");
         } else {
             $dailyAllowance = $this->time_to_decimal(Auth::user()->daily_hours_permitted);
             $staffNumber = $user->staff_number;

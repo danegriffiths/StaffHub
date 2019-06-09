@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Absence;
 use App\Clocking;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Arr;
-use Maatwebsite\Excel\Concerns\FromCollection;
 use League\Csv\Reader;
 
 ini_set('max_execution_time', 320);
@@ -168,12 +167,24 @@ class UserController extends Controller
         return view('users.show', ['user' => $user, 'manager' => $user->managerName()]);
     }
 
+    /**
+     * Show the form for editing a user
+     * @param User $user
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function edit(User $user)
     {
         $managers = User::where('manager',1)->orderBy('surname')->orderBy('forename')->get();
         return view('users.update', ['user' => $user, 'managers' => $managers, 'departments' => $this->getDepartments()]);
     }
 
+    /**
+     * Accept a request with updated user details, and update the user in the user database. Re-route back to the show
+     * user route so the user with updated details can be displayed.
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, $id)
     {
         $validatedData = $request->validate([
@@ -218,6 +229,11 @@ class UserController extends Controller
         return redirect()->route('users.show', ['user' => $user]);
     }
 
+    /**
+     * An array of all of the department in the DVLA. This is used in a view in collaboration with creating and updating
+     * users.
+     * @return array
+     */
     public function getDepartments()
     {
         $departments = array("Courts-1", "Courts-2", "Courts-3", "Courts-4", "Drivers-Input-1", "Drivers-Input-10",
@@ -233,6 +249,11 @@ class UserController extends Controller
         return $departments;
     }
 
+    /**
+     * This function is used to import a csv file containing staff data, convert the data into models, and store
+     * each record in the database.
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function importCsv() {
 
         $reader = Reader::createFromPath('/home/vagrant/Laravel/staffhub/app/Http/Controllers/test.csv', 'r');
@@ -263,5 +284,83 @@ class UserController extends Controller
         }
 
         return view('dashboard');
+    }
+
+    /**
+     * Return the view to store a flexi leave request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function flexiLeave()
+    {
+        return view('users.flexiLeave');
+    }
+
+    /**
+     * Receive a flexi leave request, and process the request.
+     * @param Request $request
+     * @return string
+     */
+    public function storeFlexiLeave(Request $request)
+    {
+
+        $validatedData = $request->validate([
+            'date' => 'required',
+            'flexi-type' => 'required',
+        ]);
+
+        $date = Carbon::parse($validatedData['date']);
+
+        if ($date->isWeekend()) {
+            return redirect()->back()->withErrors("You have selected a weekend. Please select a weekday to use as flexi leave.");
+        } else {
+            $user = Auth::user();
+            app(ClockingController::class)->getDailyBalance();
+            $flexiBalance = $user->getFlexiBalance();
+            $flexiBalance = $flexiBalance . ":00";
+
+            $fullDay = $this->time_to_decimal($user->daily_hours_permitted);
+            $halfday = $this->time_to_decimal($user->daily_hours_permitted) / 2;
+            $flexiBalanceDecimal = $this->time_to_decimal($flexiBalance);
+
+            if ($validatedData['flexi-type'] === 'full') {
+                //do calculation on full day's leave
+
+                if ($flexiBalance < 0) {
+                    return redirect()->back()->withErrors("Full day of leave will take you beyond -" . $user->daily_hours_permitted);
+                } else {
+                    $absence = new Absence;
+                    $absence->staff_number = $user->staff_number;
+                    $absence->date = $date;
+                    $absence->flexi_balance_used = $user->daily_hours_permitted;
+                    $absence->save();
+                }
+
+            } else {
+                //do calculation on full day's leave
+                if (($flexiBalanceDecimal - $halfday) < (0 - $fullDay)) {
+                    return redirect()->back()->withErrors("Half day of leave will take you beyond -" . $user->daily_hours_permitted);
+                }
+                $absence = new Absence;
+                $absence->staff_number = $user->staff_number;
+                $absence->date = $date;
+                $absence->flexi_balance_used = $user->daily_hours_permitted;
+                $absence->save();
+            }
+
+        }
+        session()->flash('message', 'Flexi leave submitted successfully');
+        return view('dashboard');
+    }
+
+    /**
+     * Get minutes from a time value
+     * @param $time
+     * @return float|int
+     */
+    function time_to_decimal($time) {
+        $timeArr = explode(':', $time);
+        $decTime = ($timeArr[0]*60) + ($timeArr[1]) + ($timeArr[2]/60);
+
+        return $decTime;
     }
 }

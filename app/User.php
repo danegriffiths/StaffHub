@@ -46,6 +46,11 @@ class User extends Authenticatable
         return $this->hasMany('App\Balance');
     }
 
+    public function absences()
+    {
+        return $this->hasMany('App\Absence');
+    }
+
     /**
      * The attributes that should be hidden for arrays.
      *
@@ -60,20 +65,15 @@ class User extends Authenticatable
         $balances = Balance::all()->where('staff_number', $this->staff_number);
 
 
-//        dd($balances);
         $accumulatedFlexi = 0;
         foreach($balances as $singleBalance) {
             $accumulatedFlexi += $this->time_to_decimal($singleBalance->daily_balance);
-//            dd($accumulatedFlexi);
         }
+
         $flexiBalance = $this->time_to_decimal($this->flexi_balance);
-
-//        dd($flexiBalance);
-//        dd($accumulatedFlexi);
         $calculatedBalance = $flexiBalance + $accumulatedFlexi;
-
-//        dd($calculatedBalance);
         $time = gmdate("i:s", abs($calculatedBalance));
+
         if ($calculatedBalance < 0) {
             $time = '-' . $time;
         }

@@ -35,29 +35,28 @@
         <div class="info" style="text-align: center">
             <h2>Total flexi balance: </h2>
             @if ( substr(auth()->user()->getFlexiBalance(),0,1) == "-" )
-                <p style="color: red">{{ auth()->user()->getFlexiBalance() }}</p>
+                <h4 style="color: red">{{ auth()->user()->getFlexiBalance() }}</h4>
             @else
-                <p style="color: green">{{ auth()->user()->getFlexiBalance() }}</p>
+                <h4 style="color: green">{{ auth()->user()->getFlexiBalance() }}</h4>
             @endif
 
             <h2>Clocking status</h2>
             @if ( auth()->user()->isClockedIn() )
-                <p style="color: green">Clocked In</p>
+                <h4 style="color: green">Clocked In</h4>
             @else
-                <p style="color: red">Clocked Out</p>
+                <h4 style="color: red">Clocked Out</h4>
             @endif
             <h2>Daily balance</h2>
-            <p style="color: red">{{ auth()->user()->getDailyBalance() }} of {{ substr(auth()->user()->daily_hours_permitted, 0, 5) }}</p>
+            @if ( auth()->user()->getDailyBalance() === 'No clockings submitted today' )
+                <h4 style="color: red">{{ auth()->user()->getDailyBalance() }}</h4>
+            @else
+                <h4 style="color: red">{{ auth()->user()->getDailyBalance() }} of {{ substr(auth()->user()->daily_hours_permitted, 0, 5) }}</h4>
+            @endif
         </div>
-
-        @if (Carbon::now()->isWeekend())
-            <h1 style="text-align: center; color: red">Not premitted to clock in on weekends.</h1>
-        @endif
 
         <div class="btn-group btn-group-lg" style="width:100%">
             @if (Carbon::now()->isWeekend())
-                <a href="{{ route('clock-in.store') }}" class="btn btn-dark disabled" style="width: 50%">Clock In</a>
-                <a href="{{ route('clock-out.store') }}" class="btn btn-dark disabled" style="width: 50%">Clock Out</a>
+                <h2 style="text-align: center; color: red; margin: auto">Not permitted to clock in on weekends.</h2>
             @elseif ( !auth()->user()->isClockedIn() )
                 <a href="{{ route('clock-in.store') }}" class="btn btn-primary" style="width: 100%">Clock In</a>
             @else
@@ -66,8 +65,13 @@
         </div>
         <hr>
         <div class="btn-group btn-group-lg" style="width:100%">
-            <a href="{{ route('clockings.index') }}" class="btn btn-primary" style="width: 50%">View Records</a>
-            <a href="{{ route('clockings.create') }}"class="btn btn-primary" style="width: 50%">Submit Request</a>
+            <a href="{{ route('clockings.index') }}" class="btn btn-primary" style="width: 50%">View Clocking Records</a>
+            <a href="{{ route('clockings.create') }}"class="btn btn-primary" style="width: 50%">Submit Clocking Request</a>
+        </div>
+        <hr>
+        <div class="btn-group btn-group-lg" style="width:100%">
+            <a href="{{ route('clockings.index') }}" class="btn btn-primary" style="width: 50%">View Flexi Leave Submissions</a>
+            <a href="{{ route('users.flexi-leave') }}" class="btn btn-primary" style="width: 50%">Submit Flexi Leave Request</a>
         </div>
     @endif
     @if( auth()->user()->manager )
