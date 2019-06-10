@@ -23,6 +23,7 @@ class ClockingController extends Controller
             $clocking->clocking_time = Carbon::now()->format('Y-m-d H:i:s');
             $clocking->staff_number = Auth::user()->staff_number;
             $clocking->clocking_type = 'IN';
+            $clocking->manual = false;
             $clocking->approved = true;
             $clocking->user_id = $user->id;
             $clocking->save();
@@ -52,6 +53,7 @@ class ClockingController extends Controller
             $clocking->clocking_time = Carbon::now()->format('Y-m-d H:i:s');
             $clocking->staff_number = Auth::user()->staff_number;
             $clocking->clocking_type = 'OUT';
+            $clocking->manual = false;
             $clocking->approved = true;
             $clocking->user_id = $user->id;
             $clocking->save();
@@ -72,7 +74,7 @@ class ClockingController extends Controller
     public function getClockings() {
 
         $userId = Auth::user()->staff_number;
-        $clocks = Clocking::where('staff_number',$userId)->orderBy('clocking_time')->get();
+        $clocks = Clocking::where('staff_number',$userId)->orderBy('clocking_time')->paginate(50);
         return view('clockings.index', ['clocks' => $clocks]);
     }
 
@@ -154,7 +156,6 @@ class ClockingController extends Controller
         $comparingNextClockType = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'), '>', $dateTimeIn)
             ->orderBy('clocking_time', 'asc')->first();
 
-//        dd($comparingNextClockType);
         //Reject overlapping clock times i.e. an out must follow an in, with no existing times inbetween.
         if ($comparingNextClockType != null) {
             if (substr($comparingNextClockType->clocking_time, 0, 16) < $dateTimeOut) {
@@ -162,14 +163,16 @@ class ClockingController extends Controller
             }
         }
         //Reject if the last clocking was of type "IN"
-        if ($comparingPriorClockType->clocking_type == "IN") {
-            return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock in can only be submitted if clock out occurred previously');
-
+        if ($comparingPriorClockType != null) {
+            if ($comparingPriorClockType->clocking_type == "IN") {
+                return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock in can only be submitted if clock out occurred previously');
+            }
         } else {
             $clocking = new Clocking;
             $clocking->clocking_time = $dateTimeIn;
             $clocking->staff_number = $user->staff_number;
             $clocking->clocking_type = "IN";
+            $clocking->manual = true;
             $clocking->approved = false;
             $clocking->user_id = $user->id;
             $clocking->save();
@@ -178,6 +181,7 @@ class ClockingController extends Controller
             $clocking->clocking_time = $dateTimeOut;
             $clocking->staff_number = $user->staff_number;
             $clocking->clocking_type = "OUT";
+            $clocking->manual = true;
             $clocking->approved = false;
             $clocking->user_id = $user->id;
             $clocking->save();
@@ -253,6 +257,7 @@ class ClockingController extends Controller
             $clocking->clocking_time = $dateTimeOut;
             $clocking->staff_number = $user->staff_number;
             $clocking->clocking_type = "OUT";
+            $clocking->manual = true;
             $clocking->approved = false;
             $clocking->user_id = $user->id;
             $clocking->save();
@@ -261,6 +266,7 @@ class ClockingController extends Controller
             $clocking->clocking_time = $dateTimeIn;
             $clocking->staff_number = $user->staff_number;
             $clocking->clocking_type = "IN";
+            $clocking->manual = true;
             $clocking->approved = false;
             $clocking->user_id = $user->id;
             $clocking->save();
@@ -302,7 +308,7 @@ class ClockingController extends Controller
     {
         $user = Auth::user();
         if ($user->daily_hours_permitted == null) {
-            return view('/dashboard')->withErrors("You are unable to perform ");
+            return view('/dashboard')->withErrors("You are not setup to submit clockings on the system. Please contact an administrator.");
         } else {
             $dailyAllowance = $this->time_to_decimal(Auth::user()->daily_hours_permitted);
             $staffNumber = $user->staff_number;
@@ -347,6 +353,7 @@ class ClockingController extends Controller
                             $clocking->clocking_time = $updateTime;
                             $clocking->staff_number = $staffNumber;
                             $clocking->clocking_type = "OUT";
+                            $clocking->manual = true;
                             $clocking->approved = false;
                             $clocking->user_id = $user->id;
                             $clocking->save();

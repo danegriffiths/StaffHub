@@ -4,18 +4,43 @@
 
 	@if($clocks->isEmpty())
 		<p>No clockings exist yet.</p>
-	@else 	  
-		<ul class="list-group">
-			@foreach ($clocks as $clock)
-                @if ($clock->approved == true)
-			        <li class="list-group-item" style="background-color: limegreen">{{ $clock->clocking_type }} - {{ $clock->clocking_time }} </li>
-                @elseif ($clock->rejected == true)
-            <li class="list-group-item" style="background-color: lightgray"><strike> {{ $clock->clocking_type }} - {{ $clock->clocking_time }} </strike></li>
-                @elseif ($clock->approved == false)
-                    <li class="list-group-item">{{ $clock->clocking_type }} - {{ $clock->clocking_time }} </li>
+	@else
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">In/Out</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Manual Entry</th>
+                    <th scope="col">Status</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach ($clocks as $clock)
+            <tr>
+                <td>{{ $clock->clocking_type }}</td>
+                <td>{{ $clock->clocking_time }}</td>
+                @if ($clock->manual == false)
+                    <td>No</td>
+                @else
+                    <td>Yes</td>
                 @endif
+                @if ($clock->rejected == true)
+                    <td style="color: red">Rejected</td>
+                @elseif ($clock->approved == false)
+                    <td>Unapproved</td>
+                @else
+                    <td></td>
+                @endif
+                <td><button>Delete</button></td>
+            </tr>
+            @endforeach
 
-			@endforeach
-		</ul>	
+            </tbody>
+        </table>
+
+    <br>
+    <div> {{ $clocks->links() }} </div>
 	@endif
+
 @endsection

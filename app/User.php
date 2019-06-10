@@ -64,14 +64,20 @@ class User extends Authenticatable
 
         $balances = Balance::all()->where('staff_number', $this->staff_number);
 
-
         $accumulatedFlexi = 0;
         foreach($balances as $singleBalance) {
             $accumulatedFlexi += $this->time_to_decimal($singleBalance->daily_balance);
         }
 
+        $absences = Absence::all()->where('staff_number', $this->staff_number);
+
+        $accumulatedAbsences = 0;
+        foreach($absences as $singleAbsence) {
+            $accumulatedAbsences += $this->time_to_decimal($singleAbsence->flexi_balance_used);
+        }
+
         $flexiBalance = $this->time_to_decimal($this->flexi_balance);
-        $calculatedBalance = $flexiBalance + $accumulatedFlexi;
+        $calculatedBalance = $flexiBalance + $accumulatedFlexi - $accumulatedAbsences;
         $time = gmdate("i:s", abs($calculatedBalance));
 
         if ($calculatedBalance < 0) {

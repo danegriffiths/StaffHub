@@ -17,7 +17,7 @@ class Absence extends Model
      * @var array
      */
     protected $fillable = [
-        'staff_number', 'date', 'flexi_balance_used'
+        'staff_number', 'flexi_type', 'date', 'flexi_balance_used'
     ];
 
     /**

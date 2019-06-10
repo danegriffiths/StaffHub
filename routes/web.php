@@ -47,6 +47,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/clocking/reject/{clocking}', 'ClockingController@reject')->name('clocking.reject');
     Route::get('/clocking/getBalance', 'ClockingController@getDailyBalance')->name('clocking.getBalance');
 
+    Route::get('/absences', 'AbsenceController@index')->name('absences.index');
+
+
 });
 
 // Authentication Routes...

@@ -16,6 +16,7 @@ class CreateAbsencesTable extends Migration
         Schema::create('absences', function (Blueprint $table) {
             $table->increments('id');
             $table->string('staff_number');
+            $table->string('flexi_type');
             $table->date('date');
             $table->time('flexi_balance_used');
             $table->unsignedInteger('user_id')->nullable();

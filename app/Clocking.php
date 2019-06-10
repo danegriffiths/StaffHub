@@ -17,7 +17,8 @@ class Clocking extends Model
 
     protected $casts = [
         'approved' => 'boolean',
-        'rejected' => 'boolean'
+        'rejected' => 'boolean',
+        'manual' => 'boolean'
     ];
 
     /**

@@ -309,10 +309,14 @@ class UserController extends Controller
         ]);
 
         $date = Carbon::parse($validatedData['date']);
+        $absences = Absence::where('date', $date)->count();
 
         if ($date->isWeekend()) {
             return redirect()->back()->withErrors("You have selected a weekend. Please select a weekday to use as flexi leave.");
-        } else {
+        } elseif ($absences > 0) {
+            return redirect()->back()->withErrors("You have already submitted leave for " . $date->format('d/m/Y'));
+        }
+        else {
             $user = Auth::user();
             app(ClockingController::class)->getDailyBalance();
             $flexiBalance = $user->getFlexiBalance();
@@ -330,8 +334,9 @@ class UserController extends Controller
                 } else {
                     $absence = new Absence;
                     $absence->staff_number = $user->staff_number;
+                    $absence->flexi_type = 'FULL-DAY';
                     $absence->date = $date;
-                    $absence->flexi_balance_used = $user->daily_hours_permitted;
+                    $absence->flexi_balance_used = gmdate("i:s", abs($fullDay));
                     $absence->save();
                 }
 
@@ -342,8 +347,9 @@ class UserController extends Controller
                 }
                 $absence = new Absence;
                 $absence->staff_number = $user->staff_number;
+                $absence->flexi_type = 'HALF-DAY';
                 $absence->date = $date;
-                $absence->flexi_balance_used = $user->daily_hours_permitted;
+                $absence->flexi_balance_used = gmdate("i:s", abs($halfday));
                 $absence->save();
             }
 
