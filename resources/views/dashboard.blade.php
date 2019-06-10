@@ -1,11 +1,7 @@
-@extends('layouts.app', ['title' => 'StaffHub: Admin Dashboard' ])
+@extends('layouts.app', ['title' => 'Admin Dashboard' ])
 
 @section('content')
 	<div id="adminButtons">
-<!--            @auth-->
-<!--            <a href="{{ route('dashboard') }}" class="btn btn-primary mb-3">Dashboard</a>-->
-<!--            @endauth-->
-
         @if( auth()->user()->administrator )
             <div class="btn-group btn-group-lg" style="width:100%">
                 <a href="{{ route('users.index') }}" class="btn btn-primary" style="width: 33.3%">All users</a>
@@ -20,18 +16,13 @@
             <hr>
             <div class="btn-group btn-group-lg" style="width:100%">
                 <a href="{{ route('users.create') }}" class="btn btn-primary" style="width: 50%">Create User</a>
-                <a href="{{ route('users.deleteIndex') }}" class="btn btn-primary" style="width: 50%">Delete Users</a>
-            </div>
-            <div>
-                <a href="{{ route('users.loadData') }}">Upload</a>
-            </div>
+                <a href="{{ route('users.loadData') }}" class="btn btn-danger" style="width: 50%">Upload</a>
 
+            </div>
         @endif
-
 	</div>
 
     @if( !auth()->user()->administrator )
-        <br>
         <div class="info" style="text-align: center">
             <h2>Total flexi balance: </h2>
             @if ( substr(auth()->user()->getFlexiBalance(),0,1) == "-" )
@@ -53,7 +44,7 @@
                 <h4 style="color: red">{{ auth()->user()->getDailyBalance() }} of {{ substr(auth()->user()->daily_hours_permitted, 0, 5) }}</h4>
             @endif
         </div>
-
+        <br>
         <div class="btn-group btn-group-lg" style="width:100%">
             @if (Carbon::now()->isWeekend())
                 <h2 style="text-align: center; color: red; margin: auto">Not permitted to clock in on weekends.</h2>

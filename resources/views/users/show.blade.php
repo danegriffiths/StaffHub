@@ -25,17 +25,17 @@
 
 		</div>
 	</div>
-@if (Auth::user()->isAdmin())
-<div>
+    @if (Auth::user()->isAdmin())
+    <div>
 
-    <form method="POST"
-          action="{{route ('users.destroy', ['id' => $user->id]) }}">
-        @csrf
-        @method('DELETE')
-        <button class="btn btn-primary btn-lg" type="submit">Delete user</button>
-        <a href="{{ route('users.edit', ['user' => $user]) }}" class="btn btn-primary btn-lg">Update user</a>
-    </form>
-</div>
-@endif
+        <form method="POST"
+              action="{{route ('users.destroy', ['id' => $user->id]) }}">
+            @csrf
+            @method('DELETE')
+            <button class="btn btn-primary btn-lg" type="submit">Delete user</button>
+            <a href="{{ route('users.edit', ['user' => $user]) }}" class="btn btn-primary btn-lg">Update user</a>
+        </form>
+    </div>
+    @endif
 
 @endsection

@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Staffhub: Users' ])
+@extends('layouts.app', ['title' => 'Create Flexi Leave' ])
 
 @section('content')
 <form method="POST" action="{{ route('users.store-leave' )}}" >

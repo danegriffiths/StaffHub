@@ -23,7 +23,7 @@ class UserController extends Controller
     public function userIndex()
     {
         $users = User::orderBy('surname')->orderBy('forename')->paginate(25);
-        return view('users.index', ['users' => $users]);
+        return view('users.index', ['users' => $users, 'title' => "Users"]);
     }
 
     /**
@@ -33,7 +33,7 @@ class UserController extends Controller
     public function managerIndex()
     {
         $users = User::where('manager',1)->orderBy('surname')->orderBy('forename')->paginate(25);
-        return view('users.index', ['users' => $users]);
+        return view('users.index', ['users' => $users, 'title' => "Managers"]);
     }
 
     /**
@@ -43,7 +43,7 @@ class UserController extends Controller
     public function administratorIndex()
     {
         $users = User::where('administrator',1)->orderBy('surname')->orderBy('forename')->paginate(25);
-        return view('users.index', ['users' => $users]);
+        return view('users.index', ['users' => $users, 'title' => "Administrators"]);
     }
 
     /**

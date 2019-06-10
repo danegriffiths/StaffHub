@@ -15,4 +15,17 @@ class AbsenceController
         $absences = Absence::where('staff_number',$userId)->orderBy('date')->paginate(25);
         return view('absences.index', ['absences' => $absences]);
     }
+
+    /**
+     * Remove the specified resource from storage.
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     * @throws \Exception
+     */
+    public function destroy(Absence $absence)
+    {
+        $absence->delete();
+        session()->flash('message', 'Absence deleted');
+        return redirect()->route('absences.index');
+    }
 }

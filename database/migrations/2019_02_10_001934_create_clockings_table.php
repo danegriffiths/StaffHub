@@ -21,6 +21,7 @@ class CreateClockingsTable extends Migration
             $table->boolean('manual');
             $table->boolean('approved');
             $table->boolean('rejected')->nullable();
+            $table->integer('associated_with')->nullable();
             $table->unsignedInteger('user_id')->nullable();
             $table->timestamps();
 

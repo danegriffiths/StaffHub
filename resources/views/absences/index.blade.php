@@ -1,11 +1,11 @@
-@extends('layouts.app', ['title' => 'Staffhub: Users' ])
+@extends('layouts.app', ['title' => 'Absences' ])
 
 @section('content')
 
 @if($absences->isEmpty())
-    <p>No absences submitted yet.</p>
+    <h4>Absence list is empty</h4>
 @else
-    <table class="table table-striped">
+    <table class="table table-striped" style="vertical-align: center">
         <thead>
             <tr>
                 <th scope="col">Date</th>
@@ -20,7 +20,14 @@
                 <td>{{ $absence->date }}</td>
                 <td>{{ $absence->flexi_type }}</td>
                 <td>{{ substr($absence->flexi_balance_used, 0, 5) }}</td>
-                <td><button>Delete</button></td>
+                <td align="right">
+                    <form method="POST"
+                          action="{{route ('absences.destroy', ['id' => $absence->id]) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-primary btn-sm" type="submit">Delete Absence</button>
+                    </form>
+                </td>
             </tr>
         @endforeach
 

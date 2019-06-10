@@ -28,17 +28,18 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/users/create', 'UserController@create')->name('users.create');
     Route::post('/users', 'UserController@store')->name('users.store');
     Route::get('/users/{user}', 'UserController@show')->name('users.show');
-    Route::delete('users/{user}', 'UserController@destroy')->name('users.destroy');
-    Route::get('users/{user}/edit', 'UserController@edit')->name('users.edit');
+    Route::delete('/users/{user}', 'UserController@destroy')->name('users.destroy');
+    Route::get('/users/{user}/edit', 'UserController@edit')->name('users.edit');
     Route::patch('users/update/{id}', 'UserController@update')->name('users.update');
     Route::get('/user-import', 'UserController@importCsv')->name('users.loadData');
     Route::get('/users-flexi-leave', 'UserController@flexiLeave')->name('users.flexi-leave');
     Route::post('/users-flexi-leave', 'UserController@storeFlexiLeave')->name('users.store-leave');
 
+    Route::get('/clockings', 'ClockingController@index')->name('clockings.index');
     Route::get('/clock-in', 'ClockingController@clockIn')->name('clock-in.store');
     Route::get('/clock-out', 'ClockingController@clockOut')->name('clock-out.store');
-    Route::get('/clockings', 'ClockingController@getClockings')->name('clockings.index');
     Route::get('/clockings/create', 'ClockingController@create')->name('clockings.create');
+    Route::delete('/clockings/{clocking}', 'ClockingController@destroy')->name('clockings.destroy');
     Route::get('/clockings/create-in-out', 'ClockingController@createInOut')->name('clockings.createinout');
     Route::get('/clockings/create-out-in', 'ClockingController@createOutIn')->name('clockings.createoutin');
     Route::post('/clockings-in-out', 'ClockingController@storeInOut')->name('clockings.storeinout');
@@ -48,7 +49,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/clocking/getBalance', 'ClockingController@getDailyBalance')->name('clocking.getBalance');
 
     Route::get('/absences', 'AbsenceController@index')->name('absences.index');
-
+    Route::delete('/absences/{absence}', 'AbsenceController@destroy')->name('absences.destroy');
 
 });
 

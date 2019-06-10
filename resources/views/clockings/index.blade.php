@@ -1,8 +1,8 @@
-@extends('layouts.app', ['title' => 'Staffhub: Users' ])
+@extends('layouts.app', ['title' => 'Clockings' ])
 
 @section('content')
 
-	@if($clocks->isEmpty())
+	@if($clockings->isEmpty())
 		<p>No clockings exist yet.</p>
 	@else
         <table class="table table-striped">
@@ -16,23 +16,34 @@
                 </tr>
             </thead>
             <tbody>
-            @foreach ($clocks as $clock)
+            @foreach ($clockings as $clocking)
             <tr>
-                <td>{{ $clock->clocking_type }}</td>
-                <td>{{ $clock->clocking_time }}</td>
-                @if ($clock->manual == false)
+                <td>{{ $clocking->clocking_type }}</td>
+                <td>{{ $clocking->clocking_time }}</td>
+                @if ($clocking->manual == false)
                     <td>No</td>
                 @else
                     <td>Yes</td>
                 @endif
-                @if ($clock->rejected == true)
+                @if ($clocking->rejected == true)
                     <td style="color: red">Rejected</td>
-                @elseif ($clock->approved == false)
+                @elseif ($clocking->approved == false)
                     <td>Unapproved</td>
                 @else
                     <td></td>
                 @endif
-                <td><button>Delete</button></td>
+                @if ($clocking->manual == true)
+                    <td align="right">
+                        <form method="POST"
+                              action="{{route ('clockings.destroy', ['id' => $clocking->id]) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-primary btn-sm" type="submit">Delete Clocking</button>
+                        </form>
+                    </td>
+                @else
+                <td></td>
+                @endif
             </tr>
             @endforeach
 
@@ -40,7 +51,7 @@
         </table>
 
     <br>
-    <div> {{ $clocks->links() }} </div>
+    <div> {{ $clockings->links() }} </div>
 	@endif
 
 @endsection

@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Staffhub: Approve Clockings' ])
+@extends('layouts.app', ['title' => 'Approve Clockings' ])
 
 @section('content')
     @php

@@ -11,6 +11,14 @@ use Illuminate\Support\Facades\Auth;
 
 class ClockingController extends Controller
 {
+
+    public function index() {
+
+        $userId = Auth::user()->staff_number;
+        $clockings = Clocking::where('staff_number',$userId)->orderBy('clocking_time')->paginate(50);
+        return view('clockings.index', ['clockings' => $clockings]);
+    }
+
     /**
      * Store a clock in
      * @return \Illuminate\Http\Response
@@ -71,13 +79,6 @@ class ClockingController extends Controller
         }
     }
 
-    public function getClockings() {
-
-        $userId = Auth::user()->staff_number;
-        $clocks = Clocking::where('staff_number',$userId)->orderBy('clocking_time')->paginate(50);
-        return view('clockings.index', ['clocks' => $clocks]);
-    }
-
     /**
      * Show the form for creating a new resource.
      * @return \Illuminate\Http\Response
@@ -85,6 +86,21 @@ class ClockingController extends Controller
     public function create()
     {
         return view('clockings.create');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     * @throws \Exception
+     */
+    public function destroy(Clocking $clocking)
+    {
+        $associatedClocking = Clocking::where('id', $clocking->associated_with)->first();
+        $clocking->delete();
+        $associatedClocking->delete();
+        session()->flash('message', 'Clocking was deleted');
+        return redirect()->route('clockings.index');
     }
 
     /**
@@ -112,6 +128,7 @@ class ClockingController extends Controller
      */
     public function storeInOut(Request $request)
     {
+
         $validatedData = $request->validate([
             'date' => 'required',
             'time_in' => 'required',
@@ -134,7 +151,7 @@ class ClockingController extends Controller
 
         //Reject any dates that occur in the future
         if ($dateTimeOut > Carbon::now() || $dateTimeIn > Carbon::now())  {
-            return redirect()->route('clockings.createoutin')->withErrors('ERROR: Cannot submit date/time in future');
+            return redirect()->route('clockings.createinout')->withErrors('ERROR: Cannot submit date/time in future');
         }
 
         $uniqueClockInCheck = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'),'=', $dateTimeIn)->get();
@@ -159,33 +176,39 @@ class ClockingController extends Controller
         //Reject overlapping clock times i.e. an out must follow an in, with no existing times inbetween.
         if ($comparingNextClockType != null) {
             if (substr($comparingNextClockType->clocking_time, 0, 16) < $dateTimeOut) {
-                return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock out must occur before clock in, and before next clocking entry');
+                return redirect()->route('clockings.createinout')->withErrors('ERROR: Clock out must occur before clock in, and before next clocking entry');
             }
         }
+
         //Reject if the last clocking was of type "IN"
         if ($comparingPriorClockType != null) {
             if ($comparingPriorClockType->clocking_type == "IN") {
-                return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock in can only be submitted if clock out occurred previously');
+                return redirect()->route('clockings.createinout')->withErrors('ERROR: Clock in can only be submitted if clock out occurred previously');
             }
         } else {
-            $clocking = new Clocking;
-            $clocking->clocking_time = $dateTimeIn;
-            $clocking->staff_number = $user->staff_number;
-            $clocking->clocking_type = "IN";
-            $clocking->manual = true;
-            $clocking->approved = false;
-            $clocking->user_id = $user->id;
-            $clocking->save();
+            $clockIn = new Clocking;
+            $clockIn->clocking_time = $dateTimeIn;
+            $clockIn->staff_number = $user->staff_number;
+            $clockIn->clocking_type = "IN";
+            $clockIn->manual = true;
+            $clockIn->approved = false;
+            $clockIn->user_id = $user->id;
+            $clockIn->save();
 
-            $clocking = new Clocking;
-            $clocking->clocking_time = $dateTimeOut;
-            $clocking->staff_number = $user->staff_number;
-            $clocking->clocking_type = "OUT";
-            $clocking->manual = true;
-            $clocking->approved = false;
-            $clocking->user_id = $user->id;
-            $clocking->save();
+            $clockOut = new Clocking;
+            $clockOut->clocking_time = $dateTimeOut;
+            $clockOut->staff_number = $user->staff_number;
+            $clockOut->clocking_type = "OUT";
+            $clockOut->manual = true;
+            $clockOut->approved = false;
+            $clockOut->associated_with = $clockIn->id;
+            $clockOut->user_id = $user->id;
+            $clockOut->save();
 
+            $update = Clocking::where('id', $clockIn->id)->first();
+            $update->clocking_time = $dateTimeIn;
+            $update->associated_with = $clockOut->id;
+            $update->save();
 
             session()->flash('message', 'Clocking submitted successfully');
             return redirect()->route('clockings.create');
@@ -253,23 +276,27 @@ class ClockingController extends Controller
             return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock out can only be submitted if clock in occurred previously');
 
         } else {
-            $clocking = new Clocking;
-            $clocking->clocking_time = $dateTimeOut;
-            $clocking->staff_number = $user->staff_number;
-            $clocking->clocking_type = "OUT";
-            $clocking->manual = true;
-            $clocking->approved = false;
-            $clocking->user_id = $user->id;
-            $clocking->save();
+            $clockOut = new Clocking;
+            $clockOut->clocking_time = $dateTimeOut;
+            $clockOut->staff_number = $user->staff_number;
+            $clockOut->clocking_type = "OUT";
+            $clockOut->manual = true;
+            $clockOut->approved = false;
+            $clockOut->user_id = $user->id;
+            $clockOut->save();
 
-            $clocking = new Clocking;
-            $clocking->clocking_time = $dateTimeIn;
-            $clocking->staff_number = $user->staff_number;
-            $clocking->clocking_type = "IN";
-            $clocking->manual = true;
-            $clocking->approved = false;
-            $clocking->user_id = $user->id;
-            $clocking->save();
+            $clockIn = new Clocking;
+            $clockIn->clocking_time = $dateTimeIn;
+            $clockIn->staff_number = $user->staff_number;
+            $clockIn->clocking_type = "IN";
+            $clockIn->manual = true;
+            $clockIn->approved = false;
+            $clockIn->associated_with = $clockOut->id;
+            $clockIn->user_id = $user->id;
+            $clockIn->save();
+
+            $clockIn->associated_with = $clockOut->id;
+            $clockIn->save();
 
             session()->flash('message', 'Clocking submitted successfully');
             return redirect()->route('clockings.create');
