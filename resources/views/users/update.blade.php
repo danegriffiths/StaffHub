@@ -1,8 +1,7 @@
 @extends('layouts.app', ['title' => 'Update ' . $user->displayName] )
 
 @section('content')
-
-
+<a href="{{ url()->previous() }} "><button type="button" class="btn btn-primary mb-3" style="float: right">Back</button></a><br>
 
 <form method="POST" action="{{ route('users.update', ['id' => $user->id]) }}">
 
@@ -34,22 +33,24 @@
             </select>
         </div>
 
-        @if ($user->manager_id != null)
+
         <div class="form-group">
             Line manager:
-                <select name="manager_id" class="form-control">
-                    <option value="no_manager">(no manager)</option>
+            <select name="manager_id" class="form-control">
+                <option value="no_manager">(no manager)</option>
+                @if ($user->manager_id != null)
                     <option value="{{ $user->manager_id }}" selected>
                         {{ $user->managerName()->forename . ' ' . $user->managerName()->surname }}
                     </option>
-                    @foreach ($managers as $manager)
-                    <option value="{{ $manager->staff_number }}">
-                        {{ $manager->forename . ' ' . $manager->surname }}
-                    </option>
-                    @endforeach
-                </select>
+                @endif
+                @foreach ($managers as $manager)
+                <option value="{{ $manager->staff_number }}">
+                    {{ $manager->forename . ' ' . $manager->surname }}
+                </option>
+                @endforeach
+            </select>
         </div>
-        @endif
+
 
         <div class="form-group">
             Daily hours permitted: <input type="text" class="form-control" name="daily_hours_permitted"  value="{{ $user->daily_hours_permitted }}"/>

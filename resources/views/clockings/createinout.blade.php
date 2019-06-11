@@ -1,6 +1,8 @@
 @extends('layouts.app', ['title' => 'Create New Clocking' ])
 
 @section('content')
+<a href="{{ url()->previous() }} "><button type="button" class="btn btn-primary mb-3" style="float: right">Back</button></a><br>
+
 <form method="POST" action="{{ route('clockings.storeinout' )}}" >
     @csrf
 

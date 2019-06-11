@@ -10,13 +10,8 @@
             </div>
             <hr>
             <div class="btn-group btn-group-lg" style="width:100%">
-                <button type="submit" class="btn btn-primary" style="width: 50%">Assign manager</button>
-                <button type="submit" class="btn btn-primary" style="width: 50%">Remove manager</button>
-            </div>
-            <hr>
-            <div class="btn-group btn-group-lg" style="width:100%">
                 <a href="{{ route('users.create') }}" class="btn btn-primary" style="width: 50%">Create User</a>
-                <a href="{{ route('users.loadData') }}" class="btn btn-danger" style="width: 50%">Upload</a>
+                <a href="{{ route('users.loadData') }}" class="btn btn-danger" style="width: 50%">Migrate Data</a>
 
             </div>
         @endif
@@ -46,8 +41,16 @@
         </div>
         <br>
         <div class="btn-group btn-group-lg" style="width:100%">
+            @php
+            $start = '06:00:00';
+            $end   = '20:00:00';
+            $now   = Carbon::now('UTC');
+            $time  = $now->format('H:i:s');
+            @endphp
             @if (Carbon::now()->isWeekend())
                 <h2 style="text-align: center; color: red; margin: auto">Not permitted to clock in on weekends.</h2>
+            @elseif ($time < $start || $time > $end)
+                <h2 style="text-align: center; color: red; margin: auto">Clocking only available between 6am and 8pm.</h2>
             @elseif ( !auth()->user()->isClockedIn() )
                 <a href="{{ route('clock-in.store') }}" class="btn btn-primary" style="width: 100%">Clock In</a>
             @else
@@ -67,9 +70,12 @@
     @endif
     @if( auth()->user()->manager )
         <hr>
+        <h2 style="text-align: center">Staff</h2>
         <div class="btn-group btn-group-lg" style="width:100%">
             <a href="{{ route('staff.index') }}" class="btn btn-primary" style="width: 50%">View Staff</a>
-            <a href="{{ route('creations.index') }}" class="btn btn-primary" style="width: 50%">Manage Requests</a>
+            <a href="{{ route('creations.index') }}" class="btn btn-primary" style="width: 50%">Manage Clocking Requests</a>
+            <a href="{{ route('absences.managerIndex') }}" class="btn btn-primary" style="width: 50%">Manage Absence Requests</a>
+
         </div>
     @endif
 

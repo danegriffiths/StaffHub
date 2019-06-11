@@ -96,7 +96,30 @@ class ClockingController extends Controller
      */
     public function destroy(Clocking $clocking)
     {
+        $user = Auth::user();
         $associatedClocking = Clocking::where('id', $clocking->associated_with)->first();
+        if ($clocking->clocking_time < $associatedClocking->clocking_time) {
+
+            $clocks = Clocking::where('staff_number', $user->staff_number)->
+                where(\DB::raw('substr(clocking_time, 1, 19)'), '>', $clocking->clocking_time)->
+                where(\DB::raw('substr(clocking_time, 1, 19)'), '<', $associatedClocking->clocking_time)->
+                where('manual', true)->count();
+
+            if ($clocks > 0) {
+                return redirect()->route('clockings.index')->withErrors("Error: Please delete manual entries between this clock-in and clock-out first");
+            }
+
+        } else {
+            $clocks = Clocking::where('staff_number', $user->staff_number)->
+            where(\DB::raw('substr(clocking_time, 1, 19)'), '>', $associatedClocking->clocking_time)->
+            where(\DB::raw('substr(clocking_time, 1, 19)'), '<', $clocking->clocking_time)->
+            where('manual', true)->count();
+
+            if ($clocks > 0) {
+                return redirect()->route('clockings.index')->withErrors("Error: Please delete manual entries between this clock-in and clock-out first");
+            }
+        }
+
         $clocking->delete();
         $associatedClocking->delete();
         session()->flash('message', 'Clocking was deleted');
@@ -173,18 +196,16 @@ class ClockingController extends Controller
         $comparingNextClockType = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'), '>', $dateTimeIn)
             ->orderBy('clocking_time', 'asc')->first();
 
+
         //Reject overlapping clock times i.e. an out must follow an in, with no existing times inbetween.
         if ($comparingNextClockType != null) {
             if (substr($comparingNextClockType->clocking_time, 0, 16) < $dateTimeOut) {
                 return redirect()->route('clockings.createinout')->withErrors('ERROR: Clock out must occur before clock in, and before next clocking entry');
             }
         }
-
         //Reject if the last clocking was of type "IN"
-        if ($comparingPriorClockType != null) {
-            if ($comparingPriorClockType->clocking_type == "IN") {
-                return redirect()->route('clockings.createinout')->withErrors('ERROR: Clock in can only be submitted if clock out occurred previously');
-            }
+        if ($comparingPriorClockType != null && $comparingPriorClockType->clocking_type == "IN") {
+            return redirect()->route('clockings.createinout')->withErrors('ERROR: Clock in can only be submitted if clock out occurred previously');
         } else {
             $clockIn = new Clocking;
             $clockIn->clocking_time = $dateTimeIn;
@@ -206,10 +227,11 @@ class ClockingController extends Controller
             $clockOut->save();
 
             $update = Clocking::where('id', $clockIn->id)->first();
-            $update->clocking_time = $dateTimeIn;
+            $update->clocking_time = \DB::raw('clocking_time');
             $update->associated_with = $clockOut->id;
             $update->save();
 
+            //TODO EMAIL MANAGER
             session()->flash('message', 'Clocking submitted successfully');
             return redirect()->route('clockings.create');
         }
@@ -266,9 +288,11 @@ class ClockingController extends Controller
         $comparingNextClockType = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'), '>', $dateTimeOut)
             ->orderBy('clocking_time', 'asc')->first();
 
-        //Reject overlapping clock times i.e. an out must follow an in, with no existing times inbetween.
-        if (substr($comparingNextClockType->clocking_time,0,16) < $dateTimeIn) {
-            return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock in must occur after clock out, and before next clocking entry');
+        //Reject overlapping clock times i.e. an out must follow an in, with no existing times in between.
+        if ($comparingNextClockType == null) {
+            return redirect()->route('clockings.createoutin')->withErrors('ERROR: No clockings exist after the IN date/time you have entered');
+        } elseif (substr($comparingNextClockType->clocking_time,0,16) < $dateTimeIn) {
+            return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock in must occur after clock out, and before next clocking entry which has been saved');
         }
 
         //Reject if the user has not made any clockings, or the last clocking was of type "OUT"
@@ -276,6 +300,7 @@ class ClockingController extends Controller
             return redirect()->route('clockings.createoutin')->withErrors('ERROR: Clock out can only be submitted if clock in occurred previously');
 
         } else {
+
             $clockOut = new Clocking;
             $clockOut->clocking_time = $dateTimeOut;
             $clockOut->staff_number = $user->staff_number;
@@ -295,9 +320,12 @@ class ClockingController extends Controller
             $clockIn->user_id = $user->id;
             $clockIn->save();
 
-            $clockIn->associated_with = $clockOut->id;
-            $clockIn->save();
+            $update = Clocking::where('id', $clockOut->id)->first();
+            $update->clocking_time = \DB::raw('clocking_time');
+            $update->associated_with = $clockIn->id;
+            $update->save();
 
+            //TODO EMAIL MANAGER
             session()->flash('message', 'Clocking submitted successfully');
             return redirect()->route('clockings.create');
         }
@@ -307,10 +335,12 @@ class ClockingController extends Controller
     {
         $approval = Clocking::find($clocking->id);
         $approval->approved = true;
+        $approval->clocking_time = \DB::raw('clocking_time');
         $approval->save();
 
         $approval = Clocking::find($clocking->id+1);
         $approval->approved = true;
+        $approval->clocking_time = \DB::raw('clocking_time');
         $approval->save();
 
         session()->flash('message', 'Clocking approved');
@@ -321,12 +351,15 @@ class ClockingController extends Controller
     {
         $approval = Clocking::find($clocking->id);
         $approval->rejected = true;
+        $approval->clocking_time = \DB::raw('clocking_time');
         $approval->save();
 
         $approval = Clocking::find($clocking->id+1);
         $approval->rejected = true;
+        $approval->clocking_time = \DB::raw('clocking_time');
         $approval->save();
 
+        //TODO EMAIL USER
         session()->flash('message', 'Clocking rejected');
         return redirect()->route('creations.index');
     }

@@ -54,7 +54,7 @@ class UserController extends Controller
     {
         $managerId = Auth::user()->staff_number;
         $users = User::where('manager_id',$managerId)->orderBy('surname')->orderBy('forename')->paginate(25);
-        return view('users.index', ['users' => $users]);
+        return view('users.index', ['users' => $users, 'title' => "Staff"]);
     }
 
     public function deleteIndex()
@@ -99,8 +99,8 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        //todo  - add proper message here. status  not working.
-        return redirect()->route('users.index')->with('status', 'User was deleted.');
+        session()->flash('message', 'User was deleted');
+        return redirect()->route('users.index');
     }
 
     /**
@@ -336,6 +336,7 @@ class UserController extends Controller
                     $absence->staff_number = $user->staff_number;
                     $absence->flexi_type = 'FULL-DAY';
                     $absence->date = $date;
+                    $absence->approved = false;
                     $absence->flexi_balance_used = gmdate("i:s", abs($fullDay));
                     $absence->save();
                 }
@@ -349,11 +350,13 @@ class UserController extends Controller
                 $absence->staff_number = $user->staff_number;
                 $absence->flexi_type = 'HALF-DAY';
                 $absence->date = $date;
+                $absence->approved = false;
                 $absence->flexi_balance_used = gmdate("i:s", abs($halfday));
                 $absence->save();
             }
 
         }
+        //TODO EMAIL MANAGER
         session()->flash('message', 'Flexi leave submitted successfully');
         return view('dashboard');
     }

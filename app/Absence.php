@@ -12,6 +12,11 @@ class Absence extends Model
         'deleted_at'
     ];
 
+    protected $casts = [
+        'approved' => 'boolean',
+        'rejected' => 'boolean'
+    ];
+
     /**
      * The attributes that are mass assignable.
      * @var array

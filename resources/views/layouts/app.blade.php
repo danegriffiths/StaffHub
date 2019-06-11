@@ -56,7 +56,7 @@
         $(function(){
             setTimeout(function() {
                 $('.fade-message').slideUp();
-            }, 2000);
+            }, 1500);
         });
     </script>
 

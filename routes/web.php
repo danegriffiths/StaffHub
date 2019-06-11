@@ -49,7 +49,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/clocking/getBalance', 'ClockingController@getDailyBalance')->name('clocking.getBalance');
 
     Route::get('/absences', 'AbsenceController@index')->name('absences.index');
+    Route::get('/absences-manager', 'AbsenceController@managerIndex')->name('absences.managerIndex');
     Route::delete('/absences/{absence}', 'AbsenceController@destroy')->name('absences.destroy');
+    Route::get('/absences/approve/{absence}', 'AbsenceController@approve')->name('absences.approve');
+    Route::get('/absences/reject/{absence}', 'AbsenceController@reject')->name('absences.reject');
 
 });
 

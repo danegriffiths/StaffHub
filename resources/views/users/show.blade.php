@@ -1,6 +1,7 @@
 @extends('layouts.app', ['title' => $user->displayName ])
 
 @section('content')
+<a href="{{ route('dashboard') }} "><button type="button" class="btn btn-primary mb-3" style="float: right">Back</button></a><br>
   	<div class="row">
 	    <div class="col-md">
 			<p>User details:</p>

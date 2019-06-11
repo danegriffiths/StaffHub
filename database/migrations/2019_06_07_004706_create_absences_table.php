@@ -19,6 +19,8 @@ class CreateAbsencesTable extends Migration
             $table->string('flexi_type');
             $table->date('date');
             $table->time('flexi_balance_used');
+            $table->boolean('approved')->nullable();
+            $table->boolean('rejected')->nullable();
             $table->unsignedInteger('user_id')->nullable();
             $table->timestamps();
 

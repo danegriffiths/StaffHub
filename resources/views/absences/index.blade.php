@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'Absences' ])
 
 @section('content')
-
+<a href="{{ route('dashboard') }} "><button type="button" class="btn btn-primary mb-3" style="float: right">Back</button></a><br>
 @if($absences->isEmpty())
     <h4>Absence list is empty</h4>
 @else
