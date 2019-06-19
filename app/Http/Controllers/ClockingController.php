@@ -98,7 +98,7 @@ class ClockingController extends Controller
     {
         $user = Auth::user();
         $associatedClocking = Clocking::where('id', $clocking->associated_with)->first();
-        
+
         if ($clocking->clocking_time < $associatedClocking->clocking_time) {
 
             $clocks = Clocking::where('staff_number', $user->staff_number)->
