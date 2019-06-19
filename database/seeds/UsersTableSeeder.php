@@ -30,7 +30,7 @@ class UsersTableSeeder extends Seeder
         $u->forename = "John";
         $u->surname = "Jones";
         $u->department = "HR";
-        $u->daily_hours_permitted = "07:40:00";
+        $u->daily_hours_permitted = "07:24:00";
         $u->weekly_hours_permitted = "37:00:00";
         $u->flexi_balance = "12:00:00";
         $u->manager = false;
@@ -44,7 +44,7 @@ class UsersTableSeeder extends Seeder
         $u->forename = "Manager";
         $u->surname = "Jones";
         $u->department = "HR";
-        $u->daily_hours_permitted = "07:40:00";
+        $u->daily_hours_permitted = "07:24:00";
         $u->weekly_hours_permitted = "37:00:00";
         $u->flexi_balance = "12:00:00";
         $u->manager = true;

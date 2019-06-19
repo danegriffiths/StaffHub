@@ -164,7 +164,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return view('users.show', ['user' => $user, 'manager' => $user->managerName()]);
+        $clockings = Clocking::where('staff_number',$user->staff_number)->orderBy('clocking_time')->paginate(50);
+        return view('users.show', ['user' => $user, 'manager' => $user->managerName(), 'clockings' => $clockings]);
     }
 
     /**

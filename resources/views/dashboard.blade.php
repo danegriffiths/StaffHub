@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Admin Dashboard' ])
+@extends('layouts.app', ['title' => $title ])
 
 @section('content')
 	<div id="adminButtons">
@@ -11,7 +11,7 @@
             <hr>
             <div class="btn-group btn-group-lg" style="width:100%">
                 <a href="{{ route('users.create') }}" class="btn btn-primary" style="width: 50%">Create User</a>
-                <a href="{{ route('users.loadData') }}" class="btn btn-danger" style="width: 50%">Migrate Data</a>
+                <a href="{{ route('users.loadData') }}" class="btn btn-danger" style="width: 50%" onclick="return confirm('WARNING \n Are you sure you want to migrate data?')">Migrate Data</a>
 
             </div>
         @endif

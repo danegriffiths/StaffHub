@@ -1,31 +1,111 @@
 @extends('layouts.app', ['title' => $user->displayName ])
 
 @section('content')
-<a href="{{ route('dashboard') }} "><button type="button" class="btn btn-primary mb-3" style="float: right">Back</button></a><br>
-  	<div class="row">
-	    <div class="col-md">
-			<p>User details:</p>
-			<ul>
-				<li>Name: {{ $user->forename}} {{ $user->surname}}</li>
-                <li>Staff number: {{ $user->staff_number}}</li>
-                <li>Department: {{ $user->department}}</li>
-                <li>Flexi balance: {{ $user->flexi_balance}}</li>
-                <li>Daily hours permitted: {{ $user->daily_hours_permitted}}</li>
-                <li>Weekly hours permitted: {{ $user->weekly_hours_permitted}}</li>
-                <li>Email: {{ $user->email}}</li>
-                @if ($user->manager_id != null)
-                <li>Line manager: {{ $manager->forename }} {{ $manager->surname }}</li>
+<a href="{{ url()->previous() }} "><button type="button" class="btn btn-primary mb-3" style="float: right">Back</button></a><br><br>
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <td>Name</td>
+                <td>{{ $user->forename }} {{ $user->surname }}</td>
+            </tr>
+            <tr>
+                <td>Staff number</td>
+                <td>{{ $user->staff_number }}</td>
+            </tr>
+            <tr>
+                <td>Department</td>
+                <td>{{ $user->department }}</td>
+            </tr>
+            <tr>
+                <td>Flexi balance</td>
+                <td>{{ $user->flexi_balance }}</td>
+            </tr>
+            <tr>
+                <td>Daily hours permitted</td>
+                <td>{{ $user->daily_hours_permitted }}</td>
+            </tr>
+            <tr>
+                <td>Weekly hours permitted</td>
+                <td>{{ $user->weekly_hours_permitted }}</td>
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td>{{ $user->email }}</td>
+            </tr>
+            @if ($user->manager_id != null)
+                <tr>
+                    <td>Line manager</td>
+                    <td>{{ $manager->forename }} {{ $manager->surname }}</td>
+                </tr>
+            @endif
+            <tr>
+                <td>Is a manager</td>
+                <td>{{ $user->manager ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <td>Is an administrator</td>
+                <td>{{ $user->administrator ? 'Yes' : 'No' }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <hr>
+
+    @if (Auth::user()->isManager())
+
+        @if($clockings->isEmpty())
+        <h4>No clockings submitted yet.</h4>
+        @else
+        <h4>Clockings</h4>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">In/Out</th>
+                <th scope="col">Time</th>
+                <th scope="col">Manual Entry</th>
+                <th scope="col">Status</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach ($clockings as $clocking)
+            <tr>
+                <td>{{ $clocking->clocking_type }}</td>
+                <td>{{ $clocking->clocking_time }}</td>
+                @if ($clocking->manual == false)
+                <td>No</td>
+                @else
+                <td>Yes</td>
                 @endif
-                <br>
-                <li>Is a manager: {{ $user->manager ? 'Yes' : 'No'}}</li>
-                <li>Is an administrator: {{ $user->administrator ? 'Yes' : 'No'}}</li>
+                @if ($clocking->rejected == true)
+                <td style="color: red">Rejected</td>
+                @elseif ($clocking->approved == false)
+                <td>Unapproved</td>
+                @else
+                <td></td>
+                @endif
+                @if ($clocking->manual == true)
+                <td align="right">
+                    <form method="POST"
+                          action="{{route ('clockings.destroy', ['id' => $clocking->id]) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-primary btn-sm" type="submit">Delete Clocking</button>
+                    </form>
+                </td>
+                @else
+                <td></td>
+                @endif
+            </tr>
+            @endforeach
 
+            </tbody>
+        </table>
 
-			</ul>
+        <br>
+        <div> {{ $clockings->links() }} </div>
+        @endif
 
-
-		</div>
-	</div>
+    @endif
     @if (Auth::user()->isAdmin())
     <div>
 
