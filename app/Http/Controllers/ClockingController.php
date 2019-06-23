@@ -8,6 +8,9 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use League\Csv\Writer;
+use SplTempFileObject;
 
 class ClockingController extends Controller
 {
@@ -102,8 +105,8 @@ class ClockingController extends Controller
         if ($clocking->clocking_time < $associatedClocking->clocking_time) {
 
             $clocks = Clocking::where('staff_number', $user->staff_number)->
-                where(\DB::raw('substr(clocking_time, 1, 19)'), '>', $clocking->clocking_time)->
-                where(\DB::raw('substr(clocking_time, 1, 19)'), '<', $associatedClocking->clocking_time)->
+                where(DB::raw('substr(clocking_time, 1, 19)'), '>', $clocking->clocking_time)->
+                where(DB::raw('substr(clocking_time, 1, 19)'), '<', $associatedClocking->clocking_time)->
                 where('manual', true)->count();
 
             if ($clocks > 0) {
@@ -112,8 +115,8 @@ class ClockingController extends Controller
 
         } else {
             $clocks = Clocking::where('staff_number', $user->staff_number)->
-            where(\DB::raw('substr(clocking_time, 1, 19)'), '>', $associatedClocking->clocking_time)->
-            where(\DB::raw('substr(clocking_time, 1, 19)'), '<', $clocking->clocking_time)->
+            where(DB::raw('substr(clocking_time, 1, 19)'), '>', $associatedClocking->clocking_time)->
+            where(DB::raw('substr(clocking_time, 1, 19)'), '<', $clocking->clocking_time)->
             where('manual', true)->count();
 
             if ($clocks > 0) {
@@ -178,8 +181,8 @@ class ClockingController extends Controller
             return redirect()->route('clockings.createinout')->withErrors('ERROR: Cannot submit date/time in future');
         }
 
-        $uniqueClockInCheck = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'),'=', $dateTimeIn)->get();
-        $uniqueClockOutCheck = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'),'=', $dateTimeOut)->get();
+        $uniqueClockInCheck = Clocking::where('staff_number', $user->staff_number)->where(DB::raw('substr(clocking_time, 1, 16)'),'=', $dateTimeIn)->get();
+        $uniqueClockOutCheck = Clocking::where('staff_number', $user->staff_number)->where(DB::raw('substr(clocking_time, 1, 16)'),'=', $dateTimeOut)->get();
 
         //Reject any duplicate clock out date/time entries
         if ($uniqueClockInCheck->count() > 0) {
@@ -191,10 +194,10 @@ class ClockingController extends Controller
             return redirect()->route('clockings.createinout')->withErrors('ERROR: Duplicate of existing clock out time');
         }
 
-        $comparingPriorClockType = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'), '<', $dateTimeIn)
+        $comparingPriorClockType = Clocking::where('staff_number', $user->staff_number)->where(DB::raw('substr(clocking_time, 1, 16)'), '<', $dateTimeIn)
             ->orderBy('clocking_time', 'desc')->first();
 
-        $comparingNextClockType = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'), '>', $dateTimeIn)
+        $comparingNextClockType = Clocking::where('staff_number', $user->staff_number)->where(DB::raw('substr(clocking_time, 1, 16)'), '>', $dateTimeIn)
             ->orderBy('clocking_time', 'asc')->first();
 
 
@@ -228,7 +231,7 @@ class ClockingController extends Controller
             $clockOut->save();
 
             $update = Clocking::where('id', $clockIn->id)->first();
-            $update->clocking_time = \DB::raw('clocking_time');
+            $update->clocking_time = DB::raw('clocking_time');
             $update->associated_with = $clockOut->id;
             $update->save();
 
@@ -270,8 +273,8 @@ class ClockingController extends Controller
             return redirect()->route('clockings.createoutin')->withErrors('ERROR: Cannot submit date/time in future');
         }
 
-        $uniqueClockOutCheck = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'),'=', $dateTimeOut)->get();
-        $uniqueClockInCheck = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'),'=', $dateTimeIn)->get();
+        $uniqueClockOutCheck = Clocking::where('staff_number', $user->staff_number)->where(DB::raw('substr(clocking_time, 1, 16)'),'=', $dateTimeOut)->get();
+        $uniqueClockInCheck = Clocking::where('staff_number', $user->staff_number)->where(DB::raw('substr(clocking_time, 1, 16)'),'=', $dateTimeIn)->get();
 
         //Reject any duplicate clock out date/time entries
         if ($uniqueClockOutCheck->count() > 0 || $uniqueClockInCheck->count() > 0) {
@@ -283,10 +286,10 @@ class ClockingController extends Controller
             return redirect()->route('clockings.createoutin')->withErrors('ERROR: Duplicate of existing clock in time');
         }
 
-        $comparingPriorClockType = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'), '<', $dateTimeOut)
+        $comparingPriorClockType = Clocking::where('staff_number', $user->staff_number)->where(DB::raw('substr(clocking_time, 1, 16)'), '<', $dateTimeOut)
             ->orderBy('clocking_time', 'desc')->first();
 
-        $comparingNextClockType = Clocking::where('staff_number', $user->staff_number)->where(\DB::raw('substr(clocking_time, 1, 16)'), '>', $dateTimeOut)
+        $comparingNextClockType = Clocking::where('staff_number', $user->staff_number)->where(DB::raw('substr(clocking_time, 1, 16)'), '>', $dateTimeOut)
             ->orderBy('clocking_time', 'asc')->first();
 
         //Reject overlapping clock times i.e. an out must follow an in, with no existing times in between.
@@ -322,7 +325,7 @@ class ClockingController extends Controller
             $clockIn->save();
 
             $update = Clocking::where('id', $clockOut->id)->first();
-            $update->clocking_time = \DB::raw('clocking_time');
+            $update->clocking_time = DB::raw('clocking_time');
             $update->associated_with = $clockIn->id;
             $update->save();
 
@@ -336,12 +339,12 @@ class ClockingController extends Controller
     {
         $approval = Clocking::find($clocking->id);
         $approval->approved = true;
-        $approval->clocking_time = \DB::raw('clocking_time');
+        $approval->clocking_time = DB::raw('clocking_time');
         $approval->save();
 
         $approval = Clocking::find($clocking->id+1);
         $approval->approved = true;
-        $approval->clocking_time = \DB::raw('clocking_time');
+        $approval->clocking_time = DB::raw('clocking_time');
         $approval->save();
 
         session()->flash('message', 'Clocking approved');
@@ -352,12 +355,12 @@ class ClockingController extends Controller
     {
         $approval = Clocking::find($clocking->id);
         $approval->rejected = true;
-        $approval->clocking_time = \DB::raw('clocking_time');
+        $approval->clocking_time = DB::raw('clocking_time');
         $approval->save();
 
         $approval = Clocking::find($clocking->id+1);
         $approval->rejected = true;
-        $approval->clocking_time = \DB::raw('clocking_time');
+        $approval->clocking_time = DB::raw('clocking_time');
         $approval->save();
 
         //TODO EMAIL USER
@@ -395,15 +398,14 @@ class ClockingController extends Controller
                             $in = Carbon::createFromFormat('Y-m-d H:i:s', $clockIns[$i]->clocking_time);
                             $out = Carbon::createFromFormat('Y-m-d H:i:s', $clockOuts[$i]->clocking_time);
 
-                            $times[] = $in->diffInMinutes($out);
                             $dailyTime += $in->diffInMinutes($out);
                         }
                     }
 
                     //If at end of day IN is last clocking, add OUT at 2hrs more than daily allowance then notify user and manager
                     if ($date != Carbon::now()->toDateString()) {
-                        $inCount = Clocking::where('staff_number', $staffNumber)->where('clocking_type', "IN")->where(\DB::raw('substr(clocking_time, 1, 10)'),'=', $date)->get();
-                        $outCount = Clocking::where('staff_number', $staffNumber)->where('clocking_type', "OUT")->where(\DB::raw('substr(clocking_time, 1, 10)'),'=', $date)->get();
+                        $inCount = Clocking::where('staff_number', $staffNumber)->where('clocking_type', "IN")->where(DB::raw('substr(clocking_time, 1, 10)'),'=', $date)->get();
+                        $outCount = Clocking::where('staff_number', $staffNumber)->where('clocking_type', "OUT")->where(DB::raw('substr(clocking_time, 1, 10)'),'=', $date)->get();
 
                         if ($inCount->count() > $outCount->count()) {
 
@@ -418,18 +420,14 @@ class ClockingController extends Controller
                             $clocking->approved = false;
                             $clocking->user_id = $user->id;
                             $clocking->save();
-                            /**
-                             * NEED TO ADD NOTIFICATION TO USER AND MANAGER NOW
-                             */
+                            //TODO-NEED TO ADD NOTIFICATION TO USER AND MANAGER NOW
                         }
                     }
 
                     //If dailytime > dailyallowance + 2hrs, cap at dailyallowance + 2, change clock out time, notify user and manager.
-                    /**
-                     * NEED TO ADD NOTIFICATION TO USER AND MANAGER NOW
-                     */
                     if ($dailyTime > $dailyAllowance + 120) {
                         $time = gmdate("i:s", abs($dailyAllowance + 120));
+                        //TODO-NEED TO ADD NOTIFICATION TO USER AND MANAGER NOW
                     } else {
                         $time = gmdate("i:s", abs($dailyTime - $dailyAllowance));
                     }
@@ -437,28 +435,77 @@ class ClockingController extends Controller
                     if ($dailyTime - $dailyAllowance < 0) {
                         $time = '-' . $time;
                     }
-
                     $balanceList = Balance::where('staff_number', $staffNumber)->where('date', $date)->get();
+
+                    $decimalTime = $this->time_to_decimal($time . ':00');
 
                     if ($balanceList->count() == 0) {
                         $balance = new Balance();
                         $balance->staff_number = $staffNumber;
-                        $balance->daily_balance = $time;
+                        $balance->daily_balance = gmdate("i:s", abs($decimalTime - $dailyAllowance));
                         $balance->date = $date;
                         $balance->user_id = $user->id;
                         $balance->save();
                     } else {
                         $balance = Balance::where('staff_number', $staffNumber)->where('date', $date)->first();
-                        $balance->daily_balance = $time;
+                        $balance->daily_balance = gmdate("i:s", abs($decimalTime - $dailyAllowance));;
                         $balance->save();
                     }
 
                 }
             }
+            $balances = Balance::where('staff_number', $staffNumber)->get();
+            $totalHours = 0;
+            foreach ($balances as $singleBalance) {
+                $totalHours += $this->time_to_decimal($singleBalance->daily_balance);
+            }
+            $initialFlexiBalance = $this->time_to_decimal($user->flexi_balance);
+            $latestFlexiBalance = gmdate("i:s", abs($initialFlexiBalance + $totalHours));
+            $user->latest_flexi_balance = $latestFlexiBalance;
+            $user->save();
+
         }
     }
 
     /**
+     * Show the form for requesting data from the database.
+     * @return \Illuminate\Http\Response
+     */
+    public function request()
+    {
+        return view('clockings.request');
+    }
+
+    /**
+     * Download data from database.
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function download(Request $request)
+    {
+        $validatedData = $request->validate([
+            'date_from' => 'required',
+            'date_to' => 'required',
+        ]);
+
+        $dateFrom = $validatedData['date_from'];
+        $dateTo = $validatedData['date_to'];
+
+        $clocks = Clocking::select('id','clocking_time', 'staff_number', 'clocking_type', 'manual', 'approved', 'rejected')->where(DB::raw('substr(clocking_time, 1, 10)'), '>=', $dateFrom)->
+        where(DB::raw('substr(clocking_time, 1, 19)'), '<=', $dateTo)->get()->toArray();
+
+        $csv = Writer::createFromFileObject(new SplTempFileObject());
+        $csv->insertOne(['ID', 'Clocking Time', 'Staff Number', 'Clocking Type', 'Manual Entry', 'Approved', 'Rejected']);
+        $csv->insertAll($clocks);
+
+        $formattedDateFrom = date("d-m-y", strtotime($dateFrom));
+        $formattedDateTo = date("d-m-y", strtotime($dateTo));
+
+        $csv->output('Clockings - ' . $formattedDateFrom . ' - ' . $formattedDateTo . '.csv');
+        die;
+    }
+
+        /**
      * Get minutes from a time value
      * @param $time
      * @return float|int

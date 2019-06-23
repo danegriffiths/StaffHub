@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Absence;
-use App\Clocking;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 

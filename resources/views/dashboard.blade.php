@@ -10,8 +10,9 @@
             </div>
             <hr>
             <div class="btn-group btn-group-lg" style="width:100%">
-                <a href="{{ route('users.create') }}" class="btn btn-primary" style="width: 50%">Create User</a>
-                <a href="{{ route('users.loadData') }}" class="btn btn-danger" style="width: 50%" onclick="return confirm('WARNING \n Are you sure you want to migrate data?')">Migrate Data</a>
+                <a href="{{ route('users.create') }}" class="btn btn-primary" style="width: 33.3%">Create User</a>
+                <a href="{{ route('clockings.request') }}" class="btn btn-primary" style="width: 33.3%">Download clockings</a>
+                <a href="{{ route('users.loadData') }}" class="btn btn-danger" style="width: 33.3%" onclick="return confirm('WARNING \n Are you sure you want to migrate data?')">Migrate Data</a>
 
             </div>
         @endif

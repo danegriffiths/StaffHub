@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration
             $table->time('daily_hours_permitted')->nullable();
             $table->time('weekly_hours_permitted')->nullable();
             $table->time('flexi_balance')->nullable();
+            $table->time('latest_flexi_balance')->nullable();
             $table->boolean('clocking_status')->nullable();
             $table->boolean('manager');
             $table->boolean('administrator');

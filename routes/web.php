@@ -44,6 +44,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/clockings/create-out-in', 'ClockingController@createOutIn')->name('clockings.createoutin');
     Route::post('/clockings-in-out', 'ClockingController@storeInOut')->name('clockings.storeinout');
     Route::post('/clockings-out-in', 'ClockingController@storeOutIn')->name('clockings.storeoutin');
+    Route::get('/clockings-request', 'ClockingController@request')->name('clockings.request');
+    Route::post('/clockings-download', 'ClockingController@download')->name('clockings.download');
     Route::get('/clocking/approve/{clocking}', 'ClockingController@approve')->name('clocking.approve');
     Route::get('/clocking/reject/{clocking}', 'ClockingController@reject')->name('clocking.reject');
     Route::get('/clocking/getBalance', 'ClockingController@getDailyBalance')->name('clocking.getBalance');

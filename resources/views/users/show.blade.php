@@ -18,7 +18,11 @@
             </tr>
             <tr>
                 <td>Flexi balance</td>
-                <td>{{ $user->flexi_balance }}</td>
+                @if ( $user->latest_flexi_balance == null )
+                    <td>{{ $user->flexi_balance }}</td>
+                @else
+                    <td>{{ $user->latest_flexi_balance }}</td>
+                @endif
             </tr>
             <tr>
                 <td>Daily hours permitted</td>
