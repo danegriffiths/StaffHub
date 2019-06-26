@@ -66,7 +66,7 @@
         <hr>
         <div class="btn-group btn-group-lg" style="width:100%">
             <a href="{{ route('absences.index') }}" class="btn btn-primary" style="width: 50%">View Flexi Leave Submissions</a>
-            <a href="{{ route('users.flexi-leave') }}" class="btn btn-primary" style="width: 50%">Submit Flexi Leave Request</a>
+            <a href="{{ route('absences.create') }}" class="btn btn-primary" style="width: 50%">Submit Flexi Leave Request</a>
         </div>
     @endif
     @if( auth()->user()->manager )

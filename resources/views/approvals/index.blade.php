@@ -5,49 +5,51 @@
     @php
         $noneRemaining = 0;
     @endphp
-
-    @foreach ($users as $user)
-        @if ( $user->clocking_corrections == null )
-        @else
-            <h4>Employee: {{ $user->forename }} {{ $user->surname }}</h4>
-            <table class="table table-striped" style="vertical-align: center">
-                <thead>
-                    <tr>
-                        <th scope="col">Type</th>
-                        <th scope="col">Time</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Time</th>
-                        <th scope="col">Approve/Reject</th>
-                    </tr>
-                </thead>
-                @for ($i = 0; $i < count($user->clocking_corrections); $i++)
-                    <tbody>
-                        <td>{{ $user->clocking_corrections[$i]->clocking_type }}</td>
-                        <td>{{ $user->clocking_corrections[$i]->clocking_time }}</td>
+    @if ( count($users) == 0 )
+    <h4>No staff are currently assigned to you</h4>
+    @else
+        @foreach ($users as $user)
+            @if ( $user->clocking_corrections == null )
+            @else
+                <h4>Employee: {{ $user->forename }} {{ $user->surname }}</h4>
+                <table class="table table-striped" style="vertical-align: center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Type</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Approve/Reject</th>
+                        </tr>
+                    </thead>
+                    @for ($i = 0; $i < count($user->clocking_corrections); $i++)
+                        <tbody>
+                            <td>{{ $user->clocking_corrections[$i]->clocking_type }}</td>
+                            <td>{{ $user->clocking_corrections[$i]->clocking_time }}</td>
+                            @php
+                                $j = $i + 1;
+                            @endphp
+                            <td>{{ $user->clocking_corrections[$j]->clocking_type }}</td>
+                            <td>{{ $user->clocking_corrections[$j]->clocking_time }}</td>
+                            <td>
+                                <a href="{{ route('clocking.approve', ['clocking1' => $user->clocking_corrections[$i], 'clocking2' => $user->clocking_corrections[$j]] ) }}" class="btn btn-success" style="width: 30%">Approve</a>
+                                <a href="{{ route('clocking.reject', ['clocking1' => $user->clocking_corrections[$i], 'clocking2' => $user->clocking_corrections[$j]] ) }}" class="btn btn-danger" style="width: 30%">Reject</a>
+                            </td>
+                        </tbody>
                         @php
-                            $j = $i + 1;
+                            $i++;
                         @endphp
-                        <td>{{ $user->clocking_corrections[$j]->clocking_type }}</td>
-                        <td>{{ $user->clocking_corrections[$j]->clocking_time }}</td>
-                        <td>
-                            <a href="{{ route('clocking.approve', ['clocking1' => $user->clocking_corrections[$i], 'clocking2' => $user->clocking_corrections[$j]] ) }}" class="btn btn-success" style="width: 30%">Approve</a>
-                            <a href="{{ route('clocking.reject', ['clocking1' => $user->clocking_corrections[$i], 'clocking2' => $user->clocking_corrections[$j]] ) }}" class="btn btn-danger" style="width: 30%">Reject</a>
-                        </td>
-                    </tbody>
-                    @php
-                        $i++;
-                    @endphp
-                @endfor
-            </table>
-            @php
-            $noneRemaining = $noneRemaining + 1;
-            @endphp
-        @endif
-    @endforeach
-
-    @if ( $noneRemaining == 0 )
+                    @endfor
+                </table>
+                @php
+                $noneRemaining = $noneRemaining + 1;
+                @endphp
+            @endif
+        @endforeach
+        @if ( $noneRemaining == 0 )
         <div class="alert alert-danger fade-message" role="alert">
             No clockings remaining!
         </div>
+        @endif
     @endif
 @endsection

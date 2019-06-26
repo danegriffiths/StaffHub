@@ -20,7 +20,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('dashboard', 'DashboardController@index')->name('dashboard');
 
     Route::get('/users', 'UserController@userIndex')->name('users.index');
-    Route::get('/users/group-deletion', 'UserController@deleteIndex')->name('users.deleteIndex');
     Route::get('/managers', 'UserController@managerIndex')->name('managers.index');
     Route::get('/administrators', 'UserController@administratorIndex')->name('administrators.index');
     Route::get('/staff', 'UserController@staffIndex')->name('staff.index');
@@ -32,8 +31,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/users/{user}/edit', 'UserController@edit')->name('users.edit');
     Route::patch('users/update/{id}', 'UserController@update')->name('users.update');
     Route::get('/user-import', 'UserController@importCsv')->name('users.loadData');
-    Route::get('/users-flexi-leave', 'UserController@flexiLeave')->name('users.flexi-leave');
-    Route::post('/users-flexi-leave', 'UserController@storeFlexiLeave')->name('users.store-leave');
 
     Route::get('/clockings', 'ClockingController@index')->name('clockings.index');
     Route::get('/clock-in', 'ClockingController@clockIn')->name('clock-in.store');
@@ -52,6 +49,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::get('/absences', 'AbsenceController@index')->name('absences.index');
     Route::get('/absences-manager', 'AbsenceController@managerIndex')->name('absences.managerIndex');
+    Route::get('/absences/create', 'AbsenceController@create')->name('absences.create');
+    Route::post('/absences', 'AbsenceController@store')->name('absences.store');
     Route::delete('/absences/{absence}', 'AbsenceController@destroy')->name('absences.destroy');
     Route::get('/absences/approve/{absence}', 'AbsenceController@approve')->name('absences.approve');
     Route::get('/absences/reject/{absence}', 'AbsenceController@reject')->name('absences.reject');

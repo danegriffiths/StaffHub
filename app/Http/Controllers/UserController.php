@@ -57,11 +57,6 @@ class UserController extends Controller
         return view('users.index', ['users' => $users, 'title' => "Staff"]);
     }
 
-    public function deleteIndex()
-    {
-        $users = User::orderBy('surname')->orderBy('forename')->paginate(25);
-        return view('users.deleteIndex', ['users' => $users]);
-    }
     /**
      * Display a listing of the resource.
      * @return \Illuminate\Http\Response
@@ -73,7 +68,6 @@ class UserController extends Controller
         $clockings = Clocking::where([ ['approved', false], ['rejected', null] ])->orderBy('clocking_time')->get();
 
         foreach ($users as $u) {
-
             $data = null;
             foreach ($clockings as $c) {
 
@@ -85,7 +79,6 @@ class UserController extends Controller
                 $u->clocking_corrections = $data;
             }
         }
-
         return view('approvals.index', ['users' => $users]);
     }
 
@@ -257,6 +250,10 @@ class UserController extends Controller
      */
     public function importCsv() {
 
+        $allUsers = User::all();
+        foreach ($allUsers as $user) {
+            $user->delete();
+        }
         $reader = Reader::createFromPath('/home/vagrant/Laravel/staffhub/app/Http/Controllers/test.csv', 'r');
         $results = $reader->fetch();
         foreach ($results as $row) {
@@ -284,81 +281,6 @@ class UserController extends Controller
             $user->save();
         }
 
-        return view('dashboard');
-    }
-
-    /**
-     * Return the view to store a flexi leave request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
-    public function flexiLeave()
-    {
-        return view('users.flexiLeave');
-    }
-
-    /**
-     * Receive a flexi leave request, and process the request.
-     * @param Request $request
-     * @return string
-     */
-    public function storeFlexiLeave(Request $request)
-    {
-
-        $validatedData = $request->validate([
-            'date' => 'required',
-            'flexi-type' => 'required',
-        ]);
-
-        $date = Carbon::parse($validatedData['date']);
-        $absences = Absence::where('date', $date)->count();
-
-        if ($date->isWeekend()) {
-            return redirect()->back()->withErrors("You have selected a weekend. Please select a weekday to use as flexi leave.");
-        } elseif ($absences > 0) {
-            return redirect()->back()->withErrors("You have already submitted leave for " . $date->format('d/m/Y'));
-        }
-        else {
-            $user = Auth::user();
-            app(ClockingController::class)->getDailyBalance();
-            $flexiBalance = $user->getFlexiBalance();
-            $flexiBalance = $flexiBalance . ":00";
-
-            $fullDay = $this->time_to_decimal($user->daily_hours_permitted);
-            $halfday = $this->time_to_decimal($user->daily_hours_permitted) / 2;
-            $flexiBalanceDecimal = $this->time_to_decimal($flexiBalance);
-
-            if ($validatedData['flexi-type'] === 'full') {
-                //do calculation on full day's leave
-
-                if ($flexiBalance < 0) {
-                    return redirect()->back()->withErrors("Full day of leave will take you beyond -" . $user->daily_hours_permitted);
-                } else {
-                    $absence = new Absence;
-                    $absence->staff_number = $user->staff_number;
-                    $absence->flexi_type = 'FULL-DAY';
-                    $absence->date = $date;
-                    $absence->approved = false;
-                    $absence->flexi_balance_used = gmdate("i:s", abs($fullDay));
-                    $absence->save();
-                }
-
-            } else {
-                //do calculation on full day's leave
-                if (($flexiBalanceDecimal - $halfday) < (0 - $fullDay)) {
-                    return redirect()->back()->withErrors("Half day of leave will take you beyond -" . $user->daily_hours_permitted);
-                }
-                $absence = new Absence;
-                $absence->staff_number = $user->staff_number;
-                $absence->flexi_type = 'HALF-DAY';
-                $absence->date = $date;
-                $absence->approved = false;
-                $absence->flexi_balance_used = gmdate("i:s", abs($halfday));
-                $absence->save();
-            }
-
-        }
-        //TODO EMAIL MANAGER
-        session()->flash('message', 'Flexi leave submitted successfully');
         return view('dashboard');
     }
 

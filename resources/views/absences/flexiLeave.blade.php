@@ -2,7 +2,7 @@
 
 @section('content')
 <a href="{{ route('dashboard') }} "><button type="button" class="btn btn-primary mb-3" style="float: right">Back</button></a><br>
-<form method="POST" action="{{ route('users.store-leave' )}}" >
+<form method="POST" action="{{ route('absences.store' )}}" >
     @csrf
 
     <h4>Current flexi balance:</h4>

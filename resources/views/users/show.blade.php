@@ -1,7 +1,22 @@
 @extends('layouts.app', ['title' => $user->displayName ])
 
 @section('content')
+@if (Auth::user()->isAdmin())
+<div>
+
+    <form method="POST"
+          action="{{route ('users.destroy', ['id' => $user->id]) }}">
+        @csrf
+        @method('DELETE')
+        <button class="btn btn-primary mb-3" type="submit" style="width: 40%">Delete user</button>
+        <a href="{{ route('users.edit', ['user' => $user]) }}" class="btn btn-primary mb-3" style="width: 40%">Update user</a>
+        <a href="{{ url()->previous() }} "><button type="button" class="btn btn-primary mb-3" style="float: right">Back</button></a><br><br>
+
+    </form>
+</div>
+@else
 <a href="{{ url()->previous() }} "><button type="button" class="btn btn-primary mb-3" style="float: right">Back</button></a><br><br>
+@endif
     <table class="table table-striped">
         <tbody>
             <tr>
@@ -109,18 +124,6 @@
         <div> {{ $clockings->links() }} </div>
         @endif
 
-    @endif
-    @if (Auth::user()->isAdmin())
-    <div>
-
-        <form method="POST"
-              action="{{route ('users.destroy', ['id' => $user->id]) }}">
-            @csrf
-            @method('DELETE')
-            <button class="btn btn-primary btn-lg" type="submit">Delete user</button>
-            <a href="{{ route('users.edit', ['user' => $user]) }}" class="btn btn-primary btn-lg">Update user</a>
-        </form>
-    </div>
     @endif
 
 @endsection

@@ -11,6 +11,7 @@
                 <th scope="col">Date</th>
                 <th scope="col">Type</th>
                 <th scope="col">Hours Used</th>
+                <th scope="col">Status</th>
                 <th scope="col"></th>
             </tr>
         </thead>
@@ -20,6 +21,13 @@
                 <td>{{ $absence->date }}</td>
                 <td>{{ $absence->flexi_type }}</td>
                 <td>{{ substr($absence->flexi_balance_used, 0, 5) }}</td>
+                @if ( $absence->approved )
+                    <td>Approved</td>
+                @elseif ( $absence->rejected )
+                    <td>Rejected</td>
+                @else
+                    <td>Unapproved</td>
+                @endif
                 <td align="right">
                     <form method="POST"
                           action="{{route ('absences.destroy', ['id' => $absence->id]) }}">
