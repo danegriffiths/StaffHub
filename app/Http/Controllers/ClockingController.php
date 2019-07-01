@@ -492,7 +492,7 @@ class ClockingController extends Controller
         $dateTo = $validatedData['date_to'];
 
         $clocks = Clocking::select('id','clocking_time', 'staff_number', 'clocking_type', 'manual', 'approved', 'rejected')->where(DB::raw('substr(clocking_time, 1, 10)'), '>=', $dateFrom)->
-        where(DB::raw('substr(clocking_time, 1, 19)'), '<=', $dateTo)->get()->toArray();
+        where(DB::raw('substr(clocking_time, 1, 10)'), '<=', $dateTo)->get()->toArray();
 
         $csv = Writer::createFromFileObject(new SplTempFileObject());
         $csv->insertOne(['ID', 'Clocking Time', 'Staff Number', 'Clocking Type', 'Manual Entry', 'Approved', 'Rejected']);
